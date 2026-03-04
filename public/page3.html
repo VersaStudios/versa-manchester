@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Sign Out — Versa</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <style>
+      @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        background: #ffffff;
+        display: flex; flex-direction: column; align-items: center;
+        min-height: 100vh;
+        font-family: 'Brother1816', Arial, sans-serif;
+      }
+
+      #topBar {
+        width: 100%; display: flex;
+        justify-content: space-between; align-items: flex-start;
+        padding: 28px 40px 0;
+      }
+
+      #logo { width: 130px; cursor: pointer; }
+
+      #clock {
+        text-align: right; font-size: 18px;
+        font-weight: bold; line-height: 1.5; color: #1a1a1a;
+      }
+
+      #box {
+        background: #f7f7f7;
+        border: 1.5px solid #e0e0e0;
+        padding: 36px 40px 40px;
+        border-radius: 24px;
+        width: 420px;
+        margin-top: 32px;
+        text-align: center;
+      }
+
+      #box h2 {
+        font-size: 30px; margin-bottom: 22px;
+        letter-spacing: 0.06em; text-transform: uppercase;
+      }
+
+      #searchWrap { position: relative; }
+
+      input[type="text"] {
+        width: 100%; padding: 18px 20px;
+        border-radius: 14px; border: 1.5px solid #d0d0d0;
+        font-size: 22px; font-family: inherit;
+        background: white; color: #1a1a1a;
+        outline: none; transition: border-color 0.2s;
+        -webkit-user-select: text;
+      }
+      input[type="text"]:focus { border-color: #1a1a1a; }
+
+      #results {
+        display: none; position: absolute; top: 100%; left: 0; right: 0;
+        background: white; border: 1.5px solid #d0d0d0; border-top: none;
+        border-radius: 0 0 14px 14px; z-index: 10;
+        max-height: 300px; overflow-y: auto;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
+        text-align: left;
+      }
+
+      .result-item {
+        padding: 16px 20px; cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        -webkit-tap-highlight-color: transparent;
+      }
+      .result-item:last-child { border-bottom: none; }
+      .result-item:active { background: #f0f0f0; }
+      .result-name { font-size: 18px; font-weight: bold; color: #1a1a1a; }
+      .result-meta { font-size: 14px; color: #888; margin-top: 3px; }
+
+      #status { margin-top: 14px; font-size: 15px; color: #c00; min-height: 1.2em; }
+    </style>
+  </head>
+  <body>
+
+    <div id="topBar">
+      <img id="logo" src="Versa Logo.png" alt="Versa">
+      <div id="clock"></div>
+    </div>
+
+    <div id="box">
+      <h2>Sign Out</h2>
+      <div id="searchWrap">
+        <input id="searchInput" type="text" placeholder="Type your name…"
+               autocomplete="off" autocorrect="off" autocapitalize="words"
+               inputmode="text">
+        <div id="results"></div>
+      </div>
+      <div id="status"></div>
+    </div>
+
+    <script>
+      let currentVisitors = [];
+
+      async function loadCurrentVisitors() {
+        try {
+          const res = await fetch('/api/visitors');
+          currentVisitors = await res.json();
+        } catch (e) {
+          document.getElementById('status').textContent = 'Could not load sign-in list.';
+        }
+      }
+
+      document.getElementById('searchInput').addEventListener('input', function () {
+        const query = this.value.trim().toLowerCase();
+        const resultsBox = document.getElementById('results');
+        if (query.length < 1) { resultsBox.style.display = 'none'; return; }
+
+        const matches = currentVisitors.filter(v => v.name.toLowerCase().includes(query));
+        resultsBox.innerHTML = '';
+
+        if (matches.length === 0) {
+          const div = document.createElement('div');
+          div.className = 'result-item';
+          div.style.color = '#999';
+          div.textContent = 'No one with that name is currently signed in.';
+          resultsBox.appendChild(div);
+        } else {
+          matches.forEach(v => {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = `<div class="result-name">${escHtml(v.name)}</div>
+                             <div class="result-meta">${escHtml(v.project || '')}${v.jobTitle ? ' · ' + escHtml(v.jobTitle) : ''}</div>`;
+            div.onclick = () => signOut(v.name);
+            resultsBox.appendChild(div);
+          });
+        }
+        resultsBox.style.display = 'block';
+      });
+
+      document.addEventListener('click', e => {
+        if (!document.getElementById('searchWrap').contains(e.target))
+          document.getElementById('results').style.display = 'none';
+      });
+
+      async function signOut(name) {
+        document.getElementById('searchInput').value = name;
+        document.getElementById('results').style.display = 'none';
+        const status = document.getElementById('status');
+        try {
+          const res = await fetch('/api/signout', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+          });
+          const data = await res.json();
+          if (res.status === 404) { status.textContent = `"${name}" is not currently signed in.`; return; }
+          if (!res.ok) { status.textContent = data.error || 'Something went wrong.'; return; }
+          sessionStorage.setItem('visitorName', data.visitor.name);
+          window.location.href = 'page5.html';
+        } catch (e) { status.textContent = 'Could not reach server.'; }
+      }
+
+      function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+
+      document.getElementById('logo').onclick = () => window.location.href = 'index.html';
+
+      function getDaySuffix(d) {
+        if (d >= 11 && d <= 13) return 'th';
+        switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
+      }
+      function updateClock() {
+        const now = new Date();
+        const dayName = now.toLocaleString('en-GB', { weekday: 'long' });
+        const day = now.getDate();
+        const month = now.toLocaleString('en-GB', { month: 'long' });
+        const time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+        document.getElementById('clock').innerHTML = `${dayName} ${day}${getDaySuffix(day)} ${month}<br>${time}`;
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
+      loadCurrentVisitors();
+      document.getElementById('searchInput').focus();
+    </script>
+  </body>
+</html>

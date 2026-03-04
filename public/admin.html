@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Admin — Versa</title>
+    <style>
+      @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
+
+      * { box-sizing: border-box; }
+
+      body {
+        background: #f0f0f0; margin: 0;
+        display: flex; flex-direction: column; align-items: center;
+        padding: 40px 20px 60px;
+        font-family: 'Brother1816', Arial, sans-serif; min-height: 100vh;
+      }
+
+      #logo { width: 140px; margin-bottom: 20px; cursor: pointer; }
+
+      /* ── Access gate ── */
+      #access-box {
+        background: white; padding: 30px 40px; border-radius: 16px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.15); text-align: center; width: 300px;
+      }
+      #access-box h2 { margin-top: 0; }
+      #access-box input {
+        width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;
+        font-size: 16px; font-family: inherit; margin-top: 8px;
+      }
+      #access-box button {
+        width: 100%; margin-top: 14px; padding: 12px; font-size: 18px;
+        border-radius: 8px; cursor: pointer; border: none;
+        background: #2e2e2e; color: white; font-family: inherit;
+      }
+      #codeError { color: red; margin-top: 8px; min-height: 1.2em; }
+
+      /* ── Main panel ── */
+      #adminPanel { display: none; width: 100%; max-width: 760px; }
+
+      h2.section-title {
+        font-size: 20px; margin: 28px 0 12px;
+        display: flex; align-items: center; justify-content: space-between;
+      }
+
+      /* Add project row */
+      .add-row {
+        display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+      }
+      .add-row input {
+        flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc;
+        font-size: 15px; font-family: inherit; min-width: 180px;
+      }
+      .add-row button {
+        padding: 10px 20px; border-radius: 8px; cursor: pointer; border: none;
+        background: #2e2e2e; color: white; font-family: inherit; font-size: 15px;
+      }
+
+      /* Project card */
+      .project-card {
+        background: white; border-radius: 14px;
+        box-shadow: 0 0 8px rgba(0,0,0,0.1); margin-bottom: 18px; overflow: hidden;
+      }
+
+      .project-header {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 14px 20px; background: #2e2e2e; color: white;
+        cursor: pointer; user-select: none;
+      }
+      .project-header h3 { margin: 0; font-size: 17px; }
+      .project-header .meta { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+      .project-header .chevron { font-size: 18px; transition: transform 0.2s; }
+      .project-card.open .chevron { transform: rotate(180deg); }
+
+      .project-body { display: none; padding: 0; }
+      .project-card.open .project-body { display: block; }
+
+      /* Person row */
+      .person-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 12px 20px; border-bottom: 1px solid #f0f0f0;
+      }
+      .person-row:last-child { border-bottom: none; }
+      .person-name { font-size: 15px; font-weight: bold; }
+      .person-title { font-size: 13px; color: #888; margin-top: 2px; }
+      .delete-btn {
+        background: #D9534F; color: white; border: none;
+        border-radius: 6px; padding: 6px 14px; cursor: pointer;
+        font-family: inherit; font-size: 13px; flex-shrink: 0;
+      }
+      .delete-btn:hover { background: #c0392b; }
+
+      .empty-msg { padding: 16px 20px; color: #aaa; font-size: 14px; }
+
+      /* Delete project button */
+      .del-project-btn {
+        background: transparent; border: 1px solid rgba(255,255,255,0.4);
+        color: white; border-radius: 6px; padding: 4px 12px;
+        cursor: pointer; font-family: inherit; font-size: 13px;
+      }
+      .del-project-btn:hover { background: rgba(255,255,255,0.15); }
+
+      #globalStatus { margin-top: 12px; font-size: 14px; color: #c00; min-height: 1.2em; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <img id="logo" src="Versa Logo.png" alt="Company Logo">
+
+    <!-- Access gate -->
+    <div id="access-box">
+      <h2>Admin Access</h2>
+      <p style="margin:0 0 6px;font-size:14px">Enter access code to manage people &amp; projects:</p>
+      <input id="codeInput" type="password" placeholder="Access code">
+      <button onclick="checkCode()">Enter</button>
+      <div id="codeError"></div>
+    </div>
+
+    <!-- Admin panel -->
+    <div id="adminPanel">
+      <h2 class="section-title">
+        Projects &amp; People
+        <span style="font-size:14px;color:#888;font-weight:normal">Click a project to expand</span>
+      </h2>
+
+      <!-- Add new project -->
+      <div class="add-row">
+        <input id="newProjectName" type="text" placeholder="New project name…">
+        <button onclick="addProject()">+ Add Project</button>
+      </div>
+
+      <div id="projectList"></div>
+      <div id="globalStatus"></div>
+    </div>
+
+    <script>
+      const ACCESS_CODE = '1234';
+      let peopleData = null;
+
+      document.getElementById('codeInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') checkCode();
+      });
+
+      function checkCode() {
+        if (document.getElementById('codeInput').value.trim() === ACCESS_CODE) {
+          document.getElementById('access-box').style.display = 'none';
+          document.getElementById('adminPanel').style.display = 'block';
+          loadPeople();
+        } else {
+          document.getElementById('codeError').textContent = 'Incorrect code.';
+        }
+      }
+
+      async function loadPeople() {
+        try {
+          const res = await fetch('/api/people');
+          peopleData = await res.json();
+          renderProjects();
+        } catch (e) {
+          setStatus('Could not load data.');
+        }
+      }
+
+      function renderProjects() {
+        const container = document.getElementById('projectList');
+        container.innerHTML = '';
+        if (!peopleData || !peopleData.projects.length) {
+          container.innerHTML = '<p style="color:#aaa">No projects yet.</p>';
+          return;
+        }
+        peopleData.projects.forEach(proj => {
+          container.appendChild(buildProjectCard(proj));
+        });
+      }
+
+      function buildProjectCard(proj) {
+        const card = document.createElement('div');
+        card.className = 'project-card';
+        card.id = `proj-${proj.id}`;
+
+        const count = proj.people.length;
+        card.innerHTML = `
+          <div class="project-header" onclick="toggleCard('${proj.id}')">
+            <div>
+              <h3>${escHtml(proj.name)}</h3>
+              <div class="meta">${count} ${count === 1 ? 'person' : 'people'}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px">
+              <button class="del-project-btn" onclick="deleteProject(event,'${proj.id}','${escHtml(proj.name)}')">Delete Project</button>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+          <div class="project-body" id="body-${proj.id}">
+            ${proj.people.length === 0
+              ? `<div class="empty-msg">No people in this project yet.</div>`
+              : proj.people.map(p => `
+                  <div class="person-row" id="person-${p.id}">
+                    <div>
+                      <div class="person-name">${escHtml(p.name)}</div>
+                      <div class="person-title">${escHtml(p.jobTitle || '—')}</div>
+                    </div>
+                    <button class="delete-btn" onclick="deletePerson('${p.id}','${escHtml(p.name)}')">Delete</button>
+                  </div>`).join('')
+            }
+          </div>
+        `;
+        return card;
+      }
+
+      function toggleCard(projectId) {
+        const card = document.getElementById(`proj-${projectId}`);
+        card.classList.toggle('open');
+      }
+
+      // ── Add project ──
+      async function addProject() {
+        const nameInput = document.getElementById('newProjectName');
+        const name = nameInput.value.trim();
+        if (!name) { setStatus('Enter a project name.'); return; }
+
+        try {
+          const res = await fetch('/api/projects', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+          });
+          const data = await res.json();
+          if (res.status === 409) { setStatus('That project already exists.'); return; }
+          if (!res.ok) { setStatus(data.error || 'Could not add project.'); return; }
+          nameInput.value = '';
+          setStatus('');
+          await loadPeople();
+        } catch (e) { setStatus('Could not reach server.'); }
+      }
+
+      // ── Delete project ──
+      async function deleteProject(event, projectId, projectName) {
+        event.stopPropagation();
+        const proj = peopleData.projects.find(p => p.id === projectId);
+        const count = proj ? proj.people.length : 0;
+        const msg = count > 0
+          ? `Delete "${projectName}" and all ${count} people in it? This cannot be undone.`
+          : `Delete project "${projectName}"?`;
+        if (!confirm(msg)) return;
+
+        try {
+          const res = await fetch(`/api/projects/${projectId}`, { method: 'DELETE' });
+          if (!res.ok) { setStatus('Could not delete project.'); return; }
+          setStatus('');
+          await loadPeople();
+        } catch (e) { setStatus('Could not reach server.'); }
+      }
+
+      // ── Delete person ──
+      async function deletePerson(personId, personName) {
+        if (!confirm(`Remove ${personName} from the database?`)) return;
+
+        try {
+          const res = await fetch(`/api/people/${personId}`, { method: 'DELETE' });
+          if (!res.ok) { setStatus('Could not delete person.'); return; }
+          setStatus('');
+          // Remove row from UI instantly
+          const row = document.getElementById(`person-${personId}`);
+          if (row) row.remove();
+          await loadPeople(); // refresh counts
+        } catch (e) { setStatus('Could not reach server.'); }
+      }
+
+      // ── Add project on Enter ──
+      document.getElementById('newProjectName').addEventListener('keydown', e => {
+        if (e.key === 'Enter') addProject();
+      });
+
+      function setStatus(msg) {
+        document.getElementById('globalStatus').textContent = msg;
+      }
+
+      function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+
+      document.getElementById('logo').onclick = () => window.location.href = 'index.html';
+    </script>
+  </body>
+</html>

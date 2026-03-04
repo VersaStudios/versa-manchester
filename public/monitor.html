@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Monitor — Versa</title>
+    <style>
+      @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
+      * { box-sizing: border-box; }
+
+      body {
+        background: #f0f0f0; margin: 0;
+        display: flex; flex-direction: column; align-items: center;
+        padding: 40px 20px;
+        font-family: 'Brother1816', Arial, sans-serif; min-height: 100vh;
+      }
+
+      #logo { width: 150px; margin-bottom: 20px; cursor: pointer; }
+
+      /* Access box */
+      #access-box {
+        background: white; padding: 30px 40px; border-radius: 16px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.15); text-align: center; width: 300px;
+      }
+      #access-box h2 { margin-top: 0; }
+      #access-box input {
+        width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;
+        font-size: 16px; font-family: inherit; margin-top: 8px;
+      }
+      #access-box button {
+        width: 100%; margin-top: 14px; padding: 12px; font-size: 18px;
+        border-radius: 8px; cursor: pointer; border: none;
+        background: #2e2e2e; color: white; font-family: inherit;
+      }
+      #error { color: red; margin-top: 10px; min-height: 1.2em; }
+
+      /* Monitor */
+      #monitor { display: none; width: 100%; max-width: 900px; }
+
+      .panel-header {
+        display: flex; justify-content: space-between; align-items: center;
+        margin-bottom: 12px; flex-wrap: wrap; gap: 10px;
+      }
+
+      .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+      .btn {
+        padding: 8px 16px; font-size: 15px; border-radius: 8px;
+        cursor: pointer; border: none; font-family: inherit; color: white;
+      }
+      .btn-dark   { background: #2e2e2e; }
+      .btn-red    { background: #D9534F; }
+      .btn-green  { background: #4CAF50; }
+      .btn-purple { background: #7B68EE; }
+
+      #liveDot {
+        display: inline-block; width: 10px; height: 10px;
+        background: #4CAF50; border-radius: 50%; margin-right: 6px;
+        animation: pulse 1.5s infinite;
+      }
+      @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+      .tabs { display: flex; gap: 0; margin-bottom: 0; }
+      .tab {
+        padding: 10px 24px; cursor: pointer; font-family: inherit;
+        font-size: 15px; border: none; background: #ddd; color: #555;
+        border-radius: 10px 10px 0 0;
+      }
+      .tab.active { background: white; color: #2e2e2e; font-weight: bold; }
+
+      .table-wrap {
+        background: white; border-radius: 0 12px 12px 12px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.12); overflow: hidden;
+      }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { padding: 12px 16px; border-bottom: 1px solid #eee; text-align: left; white-space: nowrap; }
+      th { background: #2e2e2e; color: white; }
+      tr:last-child td { border-bottom: none; }
+      .empty-row td { text-align: center; color: #888; padding: 24px; }
+
+      .badge {
+        display: inline-block; background: #2e2e2e; color: white;
+        border-radius: 999px; font-size: 13px; padding: 2px 10px;
+        margin-left: 8px; vertical-align: middle;
+      }
+
+      .project-tag {
+        display: inline-block; background: #f0f0f0; color: #555;
+        border-radius: 6px; font-size: 12px; padding: 2px 8px;
+      }
+
+      #lastUpdated { font-size: 13px; color: #888; margin-top: 10px; text-align: right; }
+    </style>
+  </head>
+  <body>
+    <img id="logo" src="Versa Logo.png" alt="Company Logo">
+
+    <div id="access-box">
+      <h2>Staff Access</h2>
+      <p style="margin:0 0 8px;font-size:14px">Enter access code to view the monitor:</p>
+      <input id="codeInput" type="password" placeholder="Access code">
+      <button onclick="checkCode()">Enter</button>
+      <div id="error"></div>
+    </div>
+
+    <div id="monitor">
+      <div class="panel-header">
+        <div>
+          <span id="liveDot"></span>
+          <strong>Live Monitor</strong>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-purple" onclick="window.location.href='admin.html'">Manage People</button>
+          <button class="btn btn-green"  onclick="exportCSV('current')">Export Current</button>
+          <button class="btn btn-dark"   onclick="exportCSV('history')">Export History</button>
+          <button class="btn btn-red"    onclick="clearAll()">Clear All</button>
+        </div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('current')">
+          Signed In <span id="currentBadge" class="badge">0</span>
+        </button>
+        <button class="tab" onclick="showTab('history')">
+          History <span id="historyBadge" class="badge">0</span>
+        </button>
+      </div>
+
+      <div id="tab-current" class="table-wrap">
+        <table>
+          <thead><tr><th>Name</th><th>Project</th><th>Signed In At</th><th></th></tr></thead>
+          <tbody id="currentBody"></tbody>
+        </table>
+      </div>
+
+      <div id="tab-history" class="table-wrap" style="display:none">
+        <table>
+          <thead><tr><th>Name</th><th>Project</th><th>Signed In At</th><th>Signed Out At</th></tr></thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+      </div>
+
+      <div id="lastUpdated"></div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+      const ACCESS_CODE = '1234';
+      let currentVisitors = [];
+      let historyData = [];
+
+      document.getElementById('codeInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') checkCode();
+      });
+
+      function checkCode() {
+        if (document.getElementById('codeInput').value.trim() === ACCESS_CODE) {
+          document.getElementById('access-box').style.display = 'none';
+          document.getElementById('monitor').style.display = 'block';
+          initMonitor();
+        } else {
+          document.getElementById('error').textContent = 'Incorrect code.';
+        }
+      }
+
+      function initMonitor() {
+        loadHistory();
+        const socket = io();
+        socket.on('update', visitors => {
+          currentVisitors = visitors;
+          renderCurrent();
+          loadHistory();
+          document.getElementById('lastUpdated').textContent =
+            'Last updated: ' + new Date().toLocaleTimeString('en-GB', { hour12: true });
+        });
+      }
+
+      async function loadHistory() {
+        try {
+          const res = await fetch('/api/history');
+          historyData = await res.json();
+          renderHistory();
+        } catch (e) {}
+      }
+
+      function formatTime(iso) {
+        if (!iso) return '—';
+        const d = new Date(iso);
+        const day = String(d.getDate()).padStart(2,'0');
+        const mon = d.toLocaleString('en-GB', { month: 'short' });
+        let h = d.getHours();
+        const m = String(d.getMinutes()).padStart(2,'0');
+        const ap = h >= 12 ? 'pm' : 'am';
+        h = h % 12 || 12;
+        return `${day} ${mon} ${h}:${m}${ap}`;
+      }
+
+      function renderCurrent() {
+        const tbody = document.getElementById('currentBody');
+        document.getElementById('currentBadge').textContent = currentVisitors.length;
+        tbody.innerHTML = '';
+        if (currentVisitors.length === 0) {
+          tbody.innerHTML = '<tr class="empty-row"><td colspan="4">No one is currently signed in.</td></tr>';
+          return;
+        }
+        currentVisitors.forEach(v => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${escHtml(v.name)}</strong></td>
+            <td><span class="project-tag">${escHtml(v.project || '—')}</span></td>
+            <td>${formatTime(v.timeIn)}</td>
+            <td><button class="btn btn-red" style="padding:4px 12px;font-size:13px" onclick="manualSignOut('${escHtml(v.name)}')">Sign Out</button></td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function renderHistory() {
+        const tbody = document.getElementById('historyBody');
+        document.getElementById('historyBadge').textContent = historyData.length;
+        tbody.innerHTML = '';
+        if (historyData.length === 0) {
+          tbody.innerHTML = '<tr class="empty-row"><td colspan="4">No history yet.</td></tr>';
+          return;
+        }
+        historyData.forEach(v => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td><strong>${escHtml(v.name)}</strong></td>
+            <td><span class="project-tag">${escHtml(v.project || '—')}</span></td>
+            <td>${formatTime(v.timeIn)}</td>
+            <td>${formatTime(v.timeOut)}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      }
+
+      function showTab(tab) {
+        document.getElementById('tab-current').style.display = tab === 'current' ? 'block' : 'none';
+        document.getElementById('tab-history').style.display = tab === 'history' ? 'block' : 'none';
+        document.querySelectorAll('.tab').forEach((el, i) => {
+          el.classList.toggle('active', (i === 0 && tab === 'current') || (i === 1 && tab === 'history'));
+        });
+      }
+
+      async function manualSignOut(name) {
+        if (!confirm(`Sign out ${name}?`)) return;
+        await fetch('/api/signout', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        });
+      }
+
+      async function clearAll() {
+        if (!confirm('Clear all current sign-ins? This cannot be undone.')) return;
+        await fetch('/api/clear', { method: 'DELETE' });
+      }
+
+      function exportCSV(type) {
+        const rows = type === 'current' ? currentVisitors : historyData;
+        if (rows.length === 0) { alert('Nothing to export.'); return; }
+        let csv = type === 'current'
+          ? 'Name,Project,Signed In At\r\n'
+          : 'Name,Project,Signed In At,Signed Out At\r\n';
+        rows.forEach(v => {
+          const n = (v.name||'').replace(/"/g,'""');
+          const p = (v.project||'').replace(/"/g,'""');
+          if (type === 'current') {
+            csv += `"${n}","${p}","${formatTime(v.timeIn)}"\r\n`;
+          } else {
+            csv += `"${n}","${p}","${formatTime(v.timeIn)}","${formatTime(v.timeOut)}"\r\n`;
+          }
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `versa-${type}-${new Date().toISOString().slice(0,10)}.csv`;
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
+
+      function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+
+      document.getElementById('logo').onclick = () => window.location.href = 'index.html';
+    </script>
+  </body>
+</html>
