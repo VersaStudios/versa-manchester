@@ -138,21 +138,15 @@
           document.getElementById('results').style.display = 'none';
       });
 
-      async function signOut(name) {
-        document.getElementById('searchInput').value = name;
+      function signOut(name) {
         document.getElementById('results').style.display = 'none';
-        const status = document.getElementById('status');
-        try {
-          const res = await fetch('/api/signout', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name })
-          });
-          const data = await res.json();
-          if (res.status === 404) { status.textContent = `"${name}" is not currently signed in.`; return; }
-          if (!res.ok) { status.textContent = data.error || 'Something went wrong.'; return; }
-          sessionStorage.setItem('visitorName', data.visitor.name);
-          window.location.href = 'page5.html';
-        } catch (e) { status.textContent = 'Could not reach server.'; }
+        // Navigate instantly — API call happens in background
+        sessionStorage.setItem('visitorName', name);
+        window.location.href = 'page5.html';
+        fetch('/api/signout', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name })
+        }).catch(() => {});
       }
 
       function escHtml(str) {
