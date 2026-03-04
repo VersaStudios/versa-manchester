@@ -62,12 +62,13 @@
       }
 
       #welcome {
-        font-size: 20px;
+        font-size: 48px;
         font-weight: bold;
-        letter-spacing: 0.12em;
+        letter-spacing: 0.06em;
         color: #1a1a1a;
         text-transform: uppercase;
-        margin-bottom: 10px;
+        margin-bottom: 14px;
+        text-align: center;
       }
 
       /* Logo cropped — show only top portion (wordmark) */
@@ -125,7 +126,7 @@
     </div>
 
     <div id="centre">
-      <div id="welcome">Welcome to</div>
+      <div id="welcome">Good Morning</div>
       <div id="logoWrap">
         <img src="Versa Logo.png" alt="Versa">
       </div>
@@ -142,6 +143,15 @@
         switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
       }
 
+      function getGreeting() {
+        const h = new Date().getHours();
+        const m = new Date().getMinutes();
+        const totalMins = h * 60 + m;
+        if (totalMins >= 240 && totalMins < 720)  return 'Good Morning';
+        if (totalMins >= 720 && totalMins < 1050) return 'Good Afternoon';
+        return 'Good Evening';
+      }
+
       function updateClock() {
         const now = new Date();
         const dayName = now.toLocaleString('en-GB', { weekday: 'long' });
@@ -150,6 +160,7 @@
         const time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
         document.getElementById('clock').innerHTML =
           `${dayName} ${day}${getDaySuffix(day)} ${month}<br>${time}`;
+        document.getElementById('welcome').textContent = getGreeting();
       }
 
       setInterval(updateClock, 1000);
