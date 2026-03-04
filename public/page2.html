@@ -230,26 +230,14 @@
       });
 
       function selectPerson(person) {
-        selectedPerson = person;
-        document.getElementById('searchInput').value = person.name;
         document.getElementById('results').style.display = 'none';
-        signIn();
-      }
-
-      async function signIn() {
-        if (!selectedPerson) return;
-        const status = document.getElementById('status');
-        try {
-          const res = await fetch('/api/signin', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ personId: selectedPerson.id, name: selectedPerson.name, jobTitle: selectedPerson.jobTitle, project: selectedPerson.projectName })
-          });
-          const data = await res.json();
-          if (res.status === 409) { status.textContent = `${selectedPerson.name} is already signed in.`; return; }
-          if (!res.ok) { status.textContent = data.error || 'Something went wrong.'; return; }
-          sessionStorage.setItem('visitorName', selectedPerson.name);
-          window.location.href = 'page4.html';
-        } catch (e) { status.textContent = 'Could not reach server.'; }
+        // Navigate instantly — API call happens in background
+        sessionStorage.setItem('visitorName', person.name);
+        window.location.href = 'page4.html';
+        fetch('/api/signin', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ personId: person.id, name: person.name, jobTitle: person.jobTitle, project: person.projectName })
+        }).catch(() => {});
       }
 
       function showNewPersonForm(name) {
@@ -277,6 +265,7 @@
         const project = allProjects.find(p => p.id === projectId);
         const isVisitor = project && project.visitorProject;
 
+        // Register first (need the person ID), then navigate instantly
         try {
           const regRes = await fetch('/api/people', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -286,15 +275,13 @@
           if (regRes.status === 409) { status.textContent = 'That name already exists.'; return; }
           if (!regRes.ok) { status.textContent = regData.error || 'Could not register.'; return; }
 
-          const signinRes = await fetch('/api/signin', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ personId: regData.person.id, name: newPersonName, jobTitle: isVisitor ? '' : jobTitle, project: project ? project.name : '' })
-          });
-          const signinData = await signinRes.json();
-          if (!signinRes.ok) { status.textContent = signinData.error || 'Could not sign in.'; return; }
-
+          // Navigate immediately, sign in in background
           sessionStorage.setItem('visitorName', newPersonName);
           window.location.href = 'page4.html';
+          fetch('/api/signin', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ personId: regData.person.id, name: newPersonName, jobTitle: isVisitor ? '' : jobTitle, project: project ? project.name : '' })
+          }).catch(() => {});
         } catch (e) { status.textContent = 'Could not reach server.'; }
       }
 
