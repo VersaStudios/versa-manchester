@@ -70,12 +70,39 @@
       .result-name { font-size: 20px; font-weight: bold; color: #1a1a1a; }
       .result-meta { font-size: 14px; color: #888; margin-top: 3px; }
 
-      #newVisitorForm {
+      /* ── Project picker ── */
+      #projectPicker {
         display: none; flex-direction: column; gap: 10px; flex-shrink: 0;
       }
-      #newVisitorForm.visible { display: flex; }
-      #newVisitorForm input { font-size: 18px; padding: 14px 18px; }
-      #newVisitorForm label { font-size: 13px; color: #888; padding-left: 4px; }
+      #projectPicker.visible { display: flex; }
+      #projectPickerLabel {
+        font-size: 13px; color: #888; padding-left: 4px;
+      }
+      .proj-btn {
+        padding: 16px 20px; font-size: 18px; font-weight: bold;
+        border-radius: 14px; cursor: pointer; text-align: left;
+        border: 2px solid #1a1a1a; background: white; color: #1a1a1a;
+        font-family: inherit; letter-spacing: 0.02em;
+        -webkit-tap-highlight-color: transparent;
+        transition: background 0.1s, color 0.1s;
+      }
+      .proj-btn:active { background: #1a1a1a; color: white; }
+      .proj-btn .proj-meta { font-size: 13px; color: #888; font-weight: normal; margin-top: 2px; }
+      .proj-btn:active .proj-meta { color: rgba(255,255,255,0.7); }
+
+      /* ── Details form (shown after project picked) ── */
+      #newPersonForm {
+        display: none; flex-direction: column; gap: 10px; flex-shrink: 0;
+      }
+      #newPersonForm.visible { display: flex; }
+      #newPersonForm input { font-size: 18px; padding: 14px 18px; }
+      #newPersonForm label { font-size: 13px; color: #888; padding-left: 4px; }
+      #backBtn {
+        padding: 12px; font-size: 15px;
+        border-radius: 14px; cursor: pointer; border: 2px solid #ccc;
+        background: white; color: #888; font-family: inherit;
+        -webkit-tap-highlight-color: transparent;
+      }
       #confirmBtn {
         padding: 16px; font-size: 20px; font-weight: bold;
         border-radius: 14px; cursor: pointer; border: none;
@@ -130,13 +157,24 @@
         <div id="results"></div>
       </div>
 
-      <div id="newVisitorForm">
-        <label for="jobTitleInput">Job title (optional)</label>
+      <!-- Step 1: pick a project -->
+      <div id="projectPicker">
+        <div id="projectPickerLabel">Choose your project or team</div>
+        <div id="projectList"></div>
+      </div>
+
+      <!-- Step 2: enter details -->
+      <div id="newPersonForm">
+        <div id="selectedProjectBadge" style="font-size:13px;color:#888;padding-left:4px;"></div>
+        <label for="jobTitleInput" id="jobTitleLabel">Job title (optional)</label>
         <input id="jobTitleInput" type="text" placeholder="e.g. Producer"
                autocomplete="off" autocapitalize="words" inputmode="text">
-        <label for="companyInput">Company (optional)</label>
-        <input id="companyInput" type="text" placeholder="e.g. BBC"
-               autocomplete="off" inputmode="text">
+        <div id="companyRow">
+          <label for="companyInput">Company (optional)</label>
+          <input id="companyInput" type="text" placeholder="e.g. BBC"
+                 autocomplete="off" inputmode="text">
+        </div>
+        <button id="backBtn" onclick="showProjectPicker()">&#8592; Change project</button>
         <button id="confirmBtn" onclick="confirmSignIn()">Sign In</button>
       </div>
 
@@ -216,12 +254,52 @@
           document.getElementById('results').style.display = 'none';
       });
 
-      function showNewVisitorForm(name) {
-        document.getElementById('results').style.display = 'none';
-        document.getElementById('searchInput').value = name;
-        document.getElementById('newVisitorForm').classList.add('visible');
-        document.getElementById('jobTitleInput').focus();
+      let selectedProject = null;
+
+      function showProjectPicker(name) {
+        if (name !== undefined) {
+          document.getElementById('results').style.display = 'none';
+          document.getElementById('searchInput').value = name;
+        }
+        selectedProject = null;
+        document.getElementById('newPersonForm').classList.remove('visible');
+        document.getElementById('projectPicker').classList.add('visible');
+
+        // Build project buttons
+        const list = document.getElementById('projectList');
+        list.innerHTML = '';
+        if (peopleData) {
+          peopleData.projects.forEach(function(proj) {
+            const btn = document.createElement('button');
+            btn.className = 'proj-btn';
+            const isVisitor = proj.visitorProject;
+            const meta = isVisitor ? 'Guest / one-off visitor' : (proj.people.length + ' member' + (proj.people.length !== 1 ? 's' : ''));
+            btn.innerHTML = escHtml(proj.name) + '<div class="proj-meta">' + meta + '</div>';
+            btn.onclick = function() { pickProject(proj); };
+            list.appendChild(btn);
+          });
+        }
         sessionStorage.setItem('isNewVisitor', 'true');
+      }
+
+      // Keep old name for compatibility
+      function showNewVisitorForm(name) { showProjectPicker(name); }
+
+      function pickProject(proj) {
+        selectedProject = proj;
+        document.getElementById('projectPicker').classList.remove('visible');
+        document.getElementById('newPersonForm').classList.add('visible');
+        document.getElementById('selectedProjectBadge').textContent = 'Adding to: ' + proj.name;
+
+        // Visitor projects show company field, others show job title
+        const isVisitor = proj.visitorProject;
+        document.getElementById('jobTitleLabel').textContent = isVisitor ? 'Job title (optional)' : 'Job title (optional)';
+        document.getElementById('companyRow').style.display = isVisitor ? 'flex' : 'none';
+        document.getElementById('companyRow').style.flexDirection = 'column';
+        document.getElementById('companyRow').style.gap = '4px';
+        document.getElementById('jobTitleInput').value = '';
+        document.getElementById('companyInput').value = '';
+        document.getElementById('jobTitleInput').focus();
       }
 
       function signIn(person) {
@@ -245,22 +323,24 @@
         const jobTitle = document.getElementById('jobTitleInput').value.trim();
         const company  = document.getElementById('companyInput').value.trim();
         if (!name) { document.getElementById('status').textContent = 'Please enter your name.'; return; }
-        const visitorProj = peopleData && peopleData.projects.find(function(p) { return p.visitorProject; });
-        const projectName = visitorProj ? visitorProj.name : 'Visitor';
-        const projectId   = visitorProj ? visitorProj.id   : null;
+        if (!selectedProject) { document.getElementById('status').textContent = 'Please choose a project.'; return; }
+
+        const projectName = selectedProject.name;
+        const projectId   = selectedProject.id;
+
         try {
-          if (projectId) {
-            await fetch('/api/people', {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name: name, jobTitle: jobTitle, company: company, projectId: projectId })
-            });
-          }
+          // Save permanently to the project
+          await fetch('/api/people', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name: name, jobTitle: jobTitle, company: company, projectId: projectId })
+          });
+          // Sign in
           const res = await fetch('/api/signin', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: name, jobTitle: jobTitle, project: projectName })
           });
           const data = await res.json();
-          if (data.error && data.error !== 'Name already exists') {
+          if (data.error && data.error !== 'Already signed in') {
             document.getElementById('status').textContent = data.error; return;
           }
           sessionStorage.setItem('visitorName', name);
@@ -278,7 +358,7 @@
 
       async function loadWeather() {
         try {
-          const url = 'https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1';
+          const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1';
           const res = await fetch(url);
           const data = await res.json();
           const temp = Math.round(data.current.temperature_2m);
