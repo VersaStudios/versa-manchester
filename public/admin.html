@@ -16,22 +16,63 @@
 
       #logo { width: 140px; margin-bottom: 20px; cursor: pointer; }
 
+      /* When access gate is visible, give body white bg */
+      body.gate-mode {
+        background: #ffffff !important;
+        padding: 0 !important;
+        justify-content: flex-start;
+        min-height: 100vh;
+      }
+      body.gate-mode #access-box {
+        padding: 28px 36px 40px;
+        min-height: 100vh;
+      }
+
       /* ── Access gate ── */
       #access-box {
-        background: white; padding: 30px 40px; border-radius: 16px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.15); text-align: center; width: 300px;
+        display: flex; flex-direction: column;
+        width: 100%; max-width: 600px;
       }
-      #access-box h2 { margin-top: 0; }
-      #access-box input {
-        width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;
-        font-size: 16px; font-family: inherit; margin-top: 8px;
+
+      #access-box #gateTopBar {
+        display: flex; justify-content: space-between;
+        align-items: center; margin-bottom: 0; padding-bottom: 0;
       }
-      #access-box button {
-        width: 100%; margin-top: 14px; padding: 12px; font-size: 18px;
-        border-radius: 8px; cursor: pointer; border: none;
-        background: #2e2e2e; color: white; font-family: inherit;
+
+      #access-box #gateLogo {
+        width: 110px; overflow: hidden; height: 38px;
       }
-      #codeError { color: red; margin-top: 8px; min-height: 1.2em; }
+      #access-box #gateLogo img { width: 100%; display: block; }
+
+      #access-box #gateHeading {
+        font-size: 12vw; font-weight: 900;
+        text-transform: uppercase; color: #1a1a1a;
+        line-height: 0.85; letter-spacing: -0.01em;
+        margin: 24px 0 40px;
+      }
+
+      #keypadDisplay {
+        width: 100%; padding: 18px 20px; border-radius: 14px;
+        border: 2px solid #1a1a1a; font-size: 40px; font-family: inherit;
+        background: white; color: #1a1a1a; text-align: center;
+        letter-spacing: 0.4em; min-height: 72px; margin-bottom: 16px;
+      }
+      #keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      .kp-btn {
+        padding: 22px 0; font-size: 28px; font-weight: bold;
+        border-radius: 14px; cursor: pointer; border: 2px solid #1a1a1a;
+        background: white; color: #1a1a1a; font-family: inherit;
+        -webkit-tap-highlight-color: transparent;
+        transition: background 0.1s, color 0.1s;
+      }
+      .kp-btn:active { background: #1a1a1a; color: white; }
+      .kp-btn.enter-btn { background: #1a1a1a; color: white; font-size: 18px; letter-spacing: 0.06em; }
+      .kp-btn.enter-btn:active { background: #444; }
+
+      #codeError {
+        color: #1a1a1a; margin-top: 12px; min-height: 1.2em;
+        font-size: 16px; font-weight: bold; letter-spacing: 0.04em;
+      }
 
       /* ── Main panel ── */
       #adminPanel { display: none; width: 100%; max-width: 760px; }
@@ -55,6 +96,8 @@
       }
 
       /* Project card */
+      .suspended-card { opacity: 0.55; }
+      .suspended-card .project-header { background: #888 !important; }
       .project-card {
         background: white; border-radius: 14px;
         box-shadow: 0 0 8px rgba(0,0,0,0.1); margin-bottom: 18px; overflow: hidden;
@@ -88,6 +131,34 @@
       }
       .delete-btn:hover { background: #c0392b; }
 
+      .nfc-btn {
+        background: #2e2e2e; color: white; border: none;
+        border-radius: 6px; padding: 6px 12px; cursor: pointer;
+        font-family: inherit; font-size: 12px; margin-right: 6px;
+      }
+      .nfc-btn.assigned { background: #4CAF50; }
+      .nfc-btn:hover { opacity: 0.85; }
+
+      #nfcModal {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.5); z-index: 100;
+        align-items: center; justify-content: center;
+      }
+      #nfcModal.open { display: flex; }
+      #nfcModalBox {
+        background: white; border-radius: 20px; padding: 36px 40px;
+        text-align: center; width: 320px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      }
+      #nfcModalBox h3 { font-size: 20px; margin-bottom: 10px; }
+      #nfcModalBox p  { font-size: 14px; color: #888; margin-bottom: 24px; }
+      .nfc-icon { font-size: 56px; margin-bottom: 16px; }
+      #nfcModalStatus { font-size: 15px; color: #4CAF50; min-height: 1.4em; margin-bottom: 16px; font-weight: bold; }
+      #nfcModalCancel {
+        padding: 12px 28px; font-size: 16px; border-radius: 10px;
+        cursor: pointer; border: 1.5px solid #d0d0d0; background: white;
+        font-family: inherit; color: #1a1a1a;
+      }
+
       .empty-msg { padding: 16px 20px; color: #aaa; font-size: 14px; }
 
       /* Delete project button */
@@ -99,23 +170,85 @@
       .del-project-btn:hover { background: rgba(255,255,255,0.15); }
 
       #globalStatus { margin-top: 12px; font-size: 14px; color: #c00; min-height: 1.2em; text-align: center; }
+
+
+      /* ── Notice section ── */
+      .notice-wrap {
+        background: white; border-radius: 14px; padding: 18px 20px;
+        box-shadow: 0 0 8px rgba(0,0,0,0.08); margin-bottom: 8px;
+      }
+      .notice-wrap input {
+        width: 100%; padding: 14px 16px; border-radius: 10px;
+        border: 2px solid #1a1a1a; font-size: 16px;
+        font-family: inherit; outline: none;
+      }
+      .notice-wrap input:focus { border-color: #555; }
+      .add-btn {
+        padding: 12px 20px; border-radius: 10px; cursor: pointer;
+        border: none; background: #1a1a1a; color: white;
+        font-family: inherit; font-size: 15px; font-weight: bold;
+        letter-spacing: 0.03em; transition: opacity 0.15s;
+      }
+      .add-btn:hover { opacity: 0.8; }
+
+      /* Suspend button */
+      .suspend-btn {
+        background: #f0a500; color: white; border: none;
+        border-radius: 6px; padding: 4px 12px; cursor: pointer;
+        font-family: inherit; font-size: 13px; margin-right: 6px;
+      }
+      .suspend-btn.suspended { background: #4CAF50; }
+      .suspend-btn:hover { opacity: 0.85; }
+
+      /* ── Safe edge padding ── */
+      body { padding-left: max(24px, env(safe-area-inset-left));
+             padding-right: max(24px, env(safe-area-inset-right)); }
+
+      /* ── Background image ── */
+      body::before {
+        content: '';
+        position: fixed; inset: 0; z-index: 0;
+        background-image: url('studio-bw.jpg');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.10;
+        pointer-events: none;
+      }
+      body > * { position: relative; z-index: 1; }
     </style>
   </head>
   <body>
-    <img id="logo" src="Versa Logo.png" alt="Company Logo">
-
     <!-- Access gate -->
     <div id="access-box">
-      <h2>Admin Access</h2>
-      <p style="margin:0 0 6px;font-size:14px">Enter access code to manage people &amp; projects:</p>
-      <input id="codeInput" type="password" placeholder="Access code">
+      <div id="gateTopBar">
+        <div id="gateLogo"><img src="Versa Logo.png" alt="Versa"></div>
+      </div>
+      <div id="gateHeading">Admin.</div>
+      <input id="codeInput" type="password" placeholder="• • • •" maxlength="10"
+             autocomplete="off" inputmode="numeric">
       <button onclick="checkCode()">Enter</button>
       <div id="codeError"></div>
     </div>
 
+    <img id="logo" src="Versa Logo.png" alt="Company Logo" style="display:none">
+
     <!-- Admin panel -->
     <div id="adminPanel">
-      <h2 class="section-title">
+
+      <!-- Notice section -->
+      <h2 class="section-title">Home Screen Notice</h2>
+      <div class="notice-wrap">
+        <input id="noticeInput" type="text" placeholder="e.g. Fire Test at 3pm — auto-clears at midnight"
+               autocomplete="off" maxlength="120">
+        <div style="display:flex;gap:10px;margin-top:10px">
+          <button class="add-btn" onclick="saveNotice()" style="flex:1">Save Notice</button>
+          <button class="add-btn" onclick="clearNotice()" style="background:#888;flex:0 0 auto">Clear</button>
+        </div>
+        <div id="noticeStatus" style="font-size:13px;color:#888;margin-top:8px;min-height:1.2em"></div>
+      </div>
+
+      <!-- Projects & People -->
+      <h2 class="section-title" style="margin-top:28px">
         Projects &amp; People
         <span style="font-size:14px;color:#888;font-weight:normal">Click a project to expand</span>
       </h2>
@@ -130,21 +263,49 @@
       <div id="globalStatus"></div>
     </div>
 
+    <!-- NFC assign modal -->
+    <div id="nfcModal">
+      <div id="nfcModalBox">
+        <div class="nfc-icon">📡</div>
+        <h3 id="nfcModalTitle">Assign Card</h3>
+        <p>Tap the NFC card on the iPad now</p>
+        <div id="nfcModalStatus">Waiting for card…</div>
+        <button id="nfcModalCancel" onclick="closeNfcModal()">Cancel</button>
+      </div>
+    </div>
+
     <script>
       const ACCESS_CODE = '1234';
+      document.body.classList.add('gate-mode');
       let peopleData = null;
 
-      document.getElementById('codeInput').addEventListener('keydown', e => {
-        if (e.key === 'Enter') checkCode();
-      });
+      let kpValue = '';
+      function kpPress(digit) {
+        if (kpValue.length >= 6) return;
+        kpValue += digit;
+        document.getElementById('keypadDisplay').textContent = '•'.repeat(kpValue.length);
+        document.getElementById('codeError').textContent = '';
+        if (kpValue.length === ACCESS_CODE.length) setTimeout(checkCode, 200);
+      }
+      function kpDelete() {
+        kpValue = kpValue.slice(0, -1);
+        document.getElementById('keypadDisplay').textContent = '•'.repeat(kpValue.length);
+      }
 
       function checkCode() {
-        if (document.getElementById('codeInput').value.trim() === ACCESS_CODE) {
+        if (kpValue === ACCESS_CODE) {
           document.getElementById('access-box').style.display = 'none';
+          document.getElementById('logo').style.display = 'block';
           document.getElementById('adminPanel').style.display = 'block';
+          document.body.classList.remove('gate-mode');
+          document.body.style.background = '#f0f0f0';
+          document.body.style.padding = '40px 20px 60px';
           loadPeople();
+          loadNotice();
         } else {
           document.getElementById('codeError').textContent = 'Incorrect code.';
+          kpValue = '';
+          document.getElementById('keypadDisplay').textContent = '';
         }
       }
 
@@ -172,7 +333,7 @@
 
       function buildProjectCard(proj) {
         const card = document.createElement('div');
-        card.className = 'project-card';
+        card.className = 'project-card' + (proj.suspended ? ' suspended-card' : '');
         card.id = `proj-${proj.id}`;
 
         const count = proj.people.length;
@@ -182,8 +343,12 @@
               <h3>${escHtml(proj.name)}</h3>
               <div class="meta">${count} ${count === 1 ? 'person' : 'people'}</div>
             </div>
-            <div style="display:flex;align-items:center;gap:12px">
-              <button class="del-project-btn" onclick="deleteProject(event,'${proj.id}','${escHtml(proj.name)}')">Delete Project</button>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="suspend-btn ${proj.suspended ? 'suspended' : ''}"
+                onclick="toggleSuspend(event,'${proj.id}')">
+                ${proj.suspended ? '▶ Restore' : '⏸ Suspend'}
+              </button>
+              <button class="del-project-btn" onclick="deleteProject(event,'${proj.id}','${escHtml(proj.name)}')">Delete</button>
               <span class="chevron">▼</span>
             </div>
           </div>
@@ -196,7 +361,15 @@
                       <div class="person-name">${escHtml(p.name)}</div>
                       <div class="person-title">${escHtml(p.jobTitle || '—')}</div>
                     </div>
-                    <button class="delete-btn" onclick="deletePerson('${p.id}','${escHtml(p.name)}')">Delete</button>
+                    <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                      <button class="nfc-btn ${p.nfcId ? 'assigned' : ''}"
+                        onclick="startAssignCard('${p.id}','${escHtml(p.name)}')"
+                        title="${p.nfcId ? 'Card assigned — click to reassign' : 'Assign NFC card'}">
+                        ${p.nfcId ? '✓ Card' : '+ Card'}
+                      </button>
+                      ${p.nfcId ? `<button class="nfc-btn" style="background:#e0e0e0;color:#555" onclick="removeCard('${p.id}','${escHtml(p.name)}')">✕</button>` : ''}
+                      <button class="delete-btn" onclick="deletePerson('${p.id}','${escHtml(p.name)}')">Delete</button>
+                    </div>
                   </div>`).join('')
             }
           </div>
@@ -270,6 +443,103 @@
 
       function setStatus(msg) {
         document.getElementById('globalStatus').textContent = msg;
+      }
+
+      // ── NFC card assignment ──
+      let assigningPersonId = null;
+      let nfcReader = null;
+
+      async function startAssignCard(personId, personName) {
+        if (!('NDEFReader' in window)) {
+          alert('NFC is not supported on this device/browser. Use Safari on iPad.');
+          return;
+        }
+        assigningPersonId = personId;
+        document.getElementById('nfcModalTitle').textContent = `Assign card to ${personName}`;
+        document.getElementById('nfcModalStatus').textContent = 'Waiting for card…';
+        document.getElementById('nfcModalStatus').style.color = '#888';
+        document.getElementById('nfcModal').classList.add('open');
+
+        try {
+          nfcReader = new NDEFReader();
+          await nfcReader.scan();
+          nfcReader.onreading = async (event) => {
+            const nfcId = event.serialNumber;
+            if (!nfcId || !assigningPersonId) return;
+
+            const res = await fetch(`/api/people/${assigningPersonId}/nfc`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ nfcId })
+            });
+            const data = await res.json();
+
+            if (!res.ok) {
+              document.getElementById('nfcModalStatus').textContent = data.error || 'Error assigning card.';
+              document.getElementById('nfcModalStatus').style.color = '#c00';
+              return;
+            }
+
+            document.getElementById('nfcModalStatus').textContent = 'Card assigned!';
+            document.getElementById('nfcModalStatus').style.color = '#4CAF50';
+            setTimeout(() => { closeNfcModal(); loadPeople(); }, 1000);
+          };
+        } catch (e) {
+          document.getElementById('nfcModalStatus').textContent = 'Could not start NFC scan.';
+          document.getElementById('nfcModalStatus').style.color = '#c00';
+        }
+      }
+
+      async function removeCard(personId, personName) {
+        if (!confirm(`Remove NFC card from ${personName}?`)) return;
+        await fetch(`/api/people/${personId}/nfc`, { method: 'DELETE' });
+        loadPeople();
+      }
+
+      function closeNfcModal() {
+        document.getElementById('nfcModal').classList.remove('open');
+        assigningPersonId = null;
+        nfcReader = null;
+      }
+
+      // ── Notice ──
+      async function loadNotice() {
+        try {
+          const res = await fetch('/api/notice');
+          const data = await res.json();
+          document.getElementById('noticeInput').value = data.text || '';
+        } catch (e) {}
+      }
+
+      async function saveNotice() {
+        const text = document.getElementById('noticeInput').value.trim();
+        const status = document.getElementById('noticeStatus');
+        try {
+          await fetch('/api/notice', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+          });
+          status.textContent = text ? '✓ Notice saved' : '✓ Notice cleared';
+          status.style.color = '#4CAF50';
+          setTimeout(() => status.textContent = '', 2500);
+        } catch (e) {
+          status.textContent = 'Could not save notice.';
+          status.style.color = '#c00';
+        }
+      }
+
+      async function clearNotice() {
+        document.getElementById('noticeInput').value = '';
+        await saveNotice();
+      }
+
+      // ── Suspend project ──
+      async function toggleSuspend(e, projectId) {
+        e.stopPropagation();
+        try {
+          await fetch(`/api/projects/${projectId}/suspend`, { method: 'PUT' });
+          loadPeople();
+        } catch (e) { setStatus('Could not update project.'); }
       }
 
       function escHtml(str) {
