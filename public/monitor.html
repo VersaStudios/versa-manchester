@@ -4,35 +4,75 @@
     <title>Monitor — Versa</title>
     <style>
       @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
-      * { box-sizing: border-box; }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
 
       body {
-        background: #f0f0f0; margin: 0;
+        background: #ffffff;
         display: flex; flex-direction: column; align-items: center;
-        padding: 40px 20px;
+        padding: 0;
         font-family: 'Brother1816', Arial, sans-serif; min-height: 100vh;
       }
 
-      #logo { width: 150px; margin-bottom: 20px; cursor: pointer; }
+      /* ── Gate mode ── */
+      body.gate-mode {
+        background: #ffffff !important;
+        padding: 0 !important;
+        justify-content: flex-start;
+        min-height: 100vh;
+      }
 
-      /* Access box */
+      /* ── Access gate ── */
       #access-box {
-        background: white; padding: 30px 40px; border-radius: 16px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.15); text-align: center; width: 300px;
+        display: flex; flex-direction: column;
+        width: 100%; max-width: 600px;
+        padding: 28px 36px 40px; min-height: 100vh;
       }
-      #access-box h2 { margin-top: 0; }
-      #access-box input {
-        width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc;
-        font-size: 16px; font-family: inherit; margin-top: 8px;
-      }
-      #access-box button {
-        width: 100%; margin-top: 14px; padding: 12px; font-size: 18px;
-        border-radius: 8px; cursor: pointer; border: none;
-        background: #2e2e2e; color: white; font-family: inherit;
-      }
-      #error { color: red; margin-top: 10px; min-height: 1.2em; }
 
-      /* Monitor */
+      #gateTopBar {
+        display: flex; justify-content: space-between; align-items: center;
+      }
+      #gateLogo { width: 110px; }
+      #gateLogo img { width: 100%; display: block; }
+
+      #gateHeading {
+        font-size: 5vw; font-weight: 900;
+        text-transform: uppercase; color: #1a1a1a;
+        line-height: 1; letter-spacing: -0.01em;
+        margin: 24px 0 40px;
+      }
+
+      /* Keypad display */
+      #keypadDisplay {
+        width: 100%; padding: 18px 20px; border-radius: 14px;
+        border: 2px solid #1a1a1a; font-size: 40px; font-family: inherit;
+        background: white; color: #1a1a1a; text-align: center;
+        letter-spacing: 0.4em; min-height: 72px; margin-bottom: 16px;
+      }
+      /* Keypad grid */
+      #keypad {
+        display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px;
+      }
+      .kp-btn {
+        padding: 22px 0; font-size: 28px; font-weight: bold;
+        border-radius: 14px; cursor: pointer; border: 2px solid #1a1a1a;
+        background: white; color: #1a1a1a; font-family: inherit;
+        -webkit-tap-highlight-color: transparent;
+        transition: background 0.1s, color 0.1s;
+      }
+      .kp-btn:active, .kp-btn.pressed { background: #1a1a1a; color: white; }
+      .kp-btn.del-btn { font-size: 22px; }
+      .kp-btn.enter-btn { background: #1a1a1a; color: white; font-size: 18px; letter-spacing: 0.06em; }
+      .kp-btn.enter-btn:active { background: #444; }
+
+      #codeError {
+        color: #1a1a1a; margin-top: 12px; min-height: 1.2em;
+        font-size: 16px; font-weight: bold; letter-spacing: 0.04em;
+      }
+
+      /* ── Logo (shown after unlock) ── */
+      #logo { width: 140px; margin-bottom: 20px; cursor: pointer; display: none; }
+
+      /* ── Monitor panel ── */
       #monitor { display: none; width: 100%; max-width: 900px; }
 
       .panel-header {
@@ -40,75 +80,157 @@
         margin-bottom: 12px; flex-wrap: wrap; gap: 10px;
       }
 
+      #liveIndicator {
+        display: flex; align-items: center; gap: 8px;
+        font-size: 16px; font-weight: bold; letter-spacing: 0.04em;
+      }
+      #liveDot {
+        width: 10px; height: 10px; background: #4CAF50;
+        border-radius: 50%; animation: pulse 1.5s infinite;
+      }
+      @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+
       .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
       .btn {
-        padding: 8px 16px; font-size: 15px; border-radius: 8px;
+        padding: 9px 16px; font-size: 14px; border-radius: 8px;
         cursor: pointer; border: none; font-family: inherit; color: white;
+        letter-spacing: 0.03em; transition: opacity 0.15s;
       }
-      .btn-dark   { background: #2e2e2e; }
+      .btn:hover { opacity: 0.85; }
+      .btn-dark   { background: #1a1a1a; }
       .btn-red    { background: #D9534F; }
       .btn-green  { background: #4CAF50; }
       .btn-purple { background: #7B68EE; }
-
-      #liveDot {
-        display: inline-block; width: 10px; height: 10px;
-        background: #4CAF50; border-radius: 50%; margin-right: 6px;
-        animation: pulse 1.5s infinite;
-      }
-      @keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
 
       .tabs { display: flex; gap: 0; margin-bottom: 0; }
       .tab {
         padding: 10px 24px; cursor: pointer; font-family: inherit;
         font-size: 15px; border: none; background: #ddd; color: #555;
-        border-radius: 10px 10px 0 0;
+        border-radius: 10px 10px 0 0; transition: background 0.15s;
       }
-      .tab.active { background: white; color: #2e2e2e; font-weight: bold; }
+      .tab.active { background: white; color: #1a1a1a; font-weight: bold; }
 
       .table-wrap {
         background: white; border-radius: 0 12px 12px 12px;
         box-shadow: 0 0 10px rgba(0,0,0,0.12); overflow: hidden;
       }
       table { border-collapse: collapse; width: 100%; }
-      th, td { padding: 12px 16px; border-bottom: 1px solid #eee; text-align: left; white-space: nowrap; }
-      th { background: #2e2e2e; color: white; }
+      th, td {
+        padding: 12px 16px; border-bottom: 1px solid #eee;
+        text-align: left; white-space: nowrap; font-size: 14px;
+      }
+      th { background: #1a1a1a; color: white; letter-spacing: 0.04em; font-size: 13px; }
       tr:last-child td { border-bottom: none; }
-      .empty-row td { text-align: center; color: #888; padding: 24px; }
+      .empty-row td { text-align: center; color: #aaa; padding: 28px; font-size: 14px; }
 
       .badge {
-        display: inline-block; background: #2e2e2e; color: white;
-        border-radius: 999px; font-size: 13px; padding: 2px 10px;
+        display: inline-block; background: #1a1a1a; color: white;
+        border-radius: 999px; font-size: 12px; padding: 2px 10px;
         margin-left: 8px; vertical-align: middle;
       }
-
       .project-tag {
         display: inline-block; background: #f0f0f0; color: #555;
         border-radius: 6px; font-size: 12px; padding: 2px 8px;
       }
 
-      #lastUpdated { font-size: 13px; color: #888; margin-top: 10px; text-align: right; }
+      #lastUpdated { font-size: 13px; color: #999; margin-top: 10px; text-align: right; }
+
+      /* ── Safe edge padding ── */
+      body { padding-left: max(24px, env(safe-area-inset-left));
+             padding-right: max(24px, env(safe-area-inset-right)); }
+
+      /* ── Background image ── */
+      body::before {
+        content: '';
+        position: fixed; inset: 0; z-index: 0;
+        background-image: url('studio-bw.jpg');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.10;
+        pointer-events: none;
+      }
+      body > * { position: relative; z-index: 1; }
+
+      /* Person history modal */
+      #personModal {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.55); z-index: 200;
+        align-items: center; justify-content: center; padding: 20px;
+      }
+      #personModal.open { display: flex; }
+      #personModalBox {
+        background: white; border-radius: 20px;
+        width: 100%; max-width: 560px; max-height: 80vh;
+        display: flex; flex-direction: column;
+        box-shadow: 0 12px 48px rgba(0,0,0,0.25); overflow: hidden;
+      }
+      #personModalHeader {
+        background: #1a1a1a; color: white; padding: 20px 24px;
+        display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+      }
+      #personModalHeader h3 { font-size: 18px; margin: 0; }
+      #personModalHeader .sub { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 3px; }
+      #personModalClose {
+        background: rgba(255,255,255,0.15); border: none; color: white;
+        border-radius: 8px; padding: 6px 14px; cursor: pointer;
+        font-family: inherit; font-size: 14px; flex-shrink: 0;
+      }
+      #personModalClose:hover { background: rgba(255,255,255,0.25); }
+      #personModalBody { overflow-y: auto; flex: 1; }
+      #personModalBody table { border-collapse: collapse; width: 100%; }
+      #personModalBody th, #personModalBody td {
+        padding: 11px 16px; border-bottom: 1px solid #f0f0f0;
+        text-align: left; font-size: 14px; white-space: nowrap;
+      }
+      #personModalBody th {
+        background: #f8f8f8; color: #555; font-size: 12px;
+        letter-spacing: 0.05em; text-transform: uppercase;
+      }
+      #personModalBody tr:last-child td { border-bottom: none; }
+      .name-link {
+        cursor: pointer; text-decoration: underline;
+        text-decoration-color: rgba(0,0,0,0.25); text-underline-offset: 3px;
+      }
+      .name-link:hover { text-decoration-color: #1a1a1a; }
     </style>
   </head>
   <body>
-    <img id="logo" src="Versa Logo.png" alt="Company Logo">
 
+    <!-- Access gate -->
     <div id="access-box">
-      <h2>Staff Access</h2>
-      <p style="margin:0 0 8px;font-size:14px">Enter access code to view the monitor:</p>
-      <input id="codeInput" type="password" placeholder="Access code">
-      <button onclick="checkCode()">Enter</button>
-      <div id="error"></div>
+      <div id="gateTopBar">
+        <div id="gateLogo"><img src="Versa Logo.png" alt="Versa"></div>
+      </div>
+      <div id="gateHeading">Staff Access</div>
+      <div id="keypadDisplay"></div>
+      <div id="keypad">
+        <button class="kp-btn" onclick="kpPress('1')">1</button>
+        <button class="kp-btn" onclick="kpPress('2')">2</button>
+        <button class="kp-btn" onclick="kpPress('3')">3</button>
+        <button class="kp-btn" onclick="kpPress('4')">4</button>
+        <button class="kp-btn" onclick="kpPress('5')">5</button>
+        <button class="kp-btn" onclick="kpPress('6')">6</button>
+        <button class="kp-btn" onclick="kpPress('7')">7</button>
+        <button class="kp-btn" onclick="kpPress('8')">8</button>
+        <button class="kp-btn" onclick="kpPress('9')">9</button>
+        <button class="kp-btn" onclick="kpDelete()">⌫</button>
+        <button class="kp-btn" onclick="kpPress('0')">0</button>
+        <button class="kp-btn enter-btn" onclick="checkCode()">Enter</button>
+      </div>
+      <div id="codeError"></div>
     </div>
 
+    <!-- Logo shown after unlock -->
+    <img id="logo" src="Versa Logo.png" alt="Versa">
+
+    <!-- Monitor panel -->
     <div id="monitor">
       <div class="panel-header">
-        <div>
-          <span id="liveDot"></span>
-          <strong>Live Monitor</strong>
+        <div id="liveIndicator">
+          <span id="liveDot"></span> Live Monitor
         </div>
         <div class="btn-row">
-          <button class="btn btn-purple" onclick="window.location.href='admin.html'">Manage People</button>
-          <button class="btn btn-green"  onclick="exportCSV('current')">Export Current</button>
+<button class="btn btn-green"  onclick="exportCSV('current')">Export Current</button>
           <button class="btn btn-dark"   onclick="exportCSV('history')">Export History</button>
           <button class="btn btn-red"    onclick="clearAll()">Clear All</button>
         </div>
@@ -140,36 +262,73 @@
       <div id="lastUpdated"></div>
     </div>
 
-    <script src="/socket.io/socket.io.js"></script>
+
+    <div id="personModal">
+      <div id="personModalBox">
+        <div id="personModalHeader">
+          <div>
+            <h3 id="personModalName"></h3>
+            <div class="sub" id="personModalSub"></div>
+          </div>
+          <button id="personModalClose" onclick="closePersonModal()">Close</button>
+        </div>
+        <div id="personModalBody"></div>
+      </div>
+    </div>
     <script>
       const ACCESS_CODE = '1234';
-      let currentVisitors = [];
-      let historyData = [];
+      let currentVisitors = [], historyData = [];
 
-      document.getElementById('codeInput').addEventListener('keydown', e => {
-        if (e.key === 'Enter') checkCode();
-      });
+      // Gate is default state
+
+      let kpValue = '';
+      function kpPress(digit) {
+        if (kpValue.length >= 6) return;
+        kpValue += digit;
+        document.getElementById('keypadDisplay').textContent = '•'.repeat(kpValue.length);
+        document.getElementById('codeError').textContent = '';
+        if (kpValue.length === ACCESS_CODE.length) setTimeout(checkCode, 200);
+      }
+      function kpDelete() {
+        kpValue = kpValue.slice(0, -1);
+        document.getElementById('keypadDisplay').textContent = '•'.repeat(kpValue.length);
+      }
 
       function checkCode() {
-        if (document.getElementById('codeInput').value.trim() === ACCESS_CODE) {
+        if (kpValue === ACCESS_CODE) {
           document.getElementById('access-box').style.display = 'none';
+          document.getElementById('logo').style.display = 'block';
           document.getElementById('monitor').style.display = 'block';
+          document.body.style.background = '#f0f0f0';
+          document.body.style.padding = '40px 20px 60px';
           initMonitor();
         } else {
-          document.getElementById('error').textContent = 'Incorrect code.';
+          document.getElementById('codeError').textContent = 'Incorrect code.';
+          kpValue = '';
+          document.getElementById('keypadDisplay').textContent = '';
         }
       }
 
       function initMonitor() {
         loadHistory();
-        const socket = io();
-        socket.on('update', visitors => {
-          currentVisitors = visitors;
-          renderCurrent();
-          loadHistory();
-          document.getElementById('lastUpdated').textContent =
-            'Last updated: ' + new Date().toLocaleTimeString('en-GB', { hour12: true });
-        });
+        // Load socket.io dynamically so gate works even before it's available
+        const s = document.createElement('script');
+        s.src = '/socket.io/socket.io.js';
+        s.onload = function() {
+          const socket = io();
+          socket.on('update', visitors => {
+            currentVisitors = visitors;
+            renderCurrent();
+            loadHistory();
+            document.getElementById('lastUpdated').textContent =
+              'Last updated: ' + new Date().toLocaleTimeString('en-GB', { hour12: true });
+          });
+        };
+        document.head.appendChild(s);
+        // Also do initial fetch for current visitors
+        fetch('/api/visitors').then(r => r.json()).then(v => {
+          currentVisitors = v; renderCurrent();
+        }).catch(() => {});
       }
 
       async function loadHistory() {
@@ -196,17 +355,18 @@
         const tbody = document.getElementById('currentBody');
         document.getElementById('currentBadge').textContent = currentVisitors.length;
         tbody.innerHTML = '';
-        if (currentVisitors.length === 0) {
+        if (!currentVisitors.length) {
           tbody.innerHTML = '<tr class="empty-row"><td colspan="4">No one is currently signed in.</td></tr>';
           return;
         }
         currentVisitors.forEach(v => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td><strong>${escHtml(v.name)}</strong></td>
+            <td><strong class="name-link" onclick="openPersonModal('${escHtml(v.name)}')">${escHtml(v.name)}</strong></td>
             <td><span class="project-tag">${escHtml(v.project || '—')}</span></td>
             <td>${formatTime(v.timeIn)}</td>
-            <td><button class="btn btn-red" style="padding:4px 12px;font-size:13px" onclick="manualSignOut('${escHtml(v.name)}')">Sign Out</button></td>
+            <td><button class="btn btn-red" style="padding:4px 12px;font-size:13px"
+                onclick="manualSignOut('${escHtml(v.name)}')">Sign Out</button></td>
           `;
           tbody.appendChild(tr);
         });
@@ -216,14 +376,14 @@
         const tbody = document.getElementById('historyBody');
         document.getElementById('historyBadge').textContent = historyData.length;
         tbody.innerHTML = '';
-        if (historyData.length === 0) {
+        if (!historyData.length) {
           tbody.innerHTML = '<tr class="empty-row"><td colspan="4">No history yet.</td></tr>';
           return;
         }
         historyData.forEach(v => {
           const tr = document.createElement('tr');
           tr.innerHTML = `
-            <td><strong>${escHtml(v.name)}</strong></td>
+            <td><strong class="name-link" onclick="openPersonModal('${escHtml(v.name)}')">${escHtml(v.name)}</strong></td>
             <td><span class="project-tag">${escHtml(v.project || '—')}</span></td>
             <td>${formatTime(v.timeIn)}</td>
             <td>${formatTime(v.timeOut)}</td>
@@ -234,7 +394,7 @@
 
       function showTab(tab) {
         document.getElementById('tab-current').style.display = tab === 'current' ? 'block' : 'none';
-        document.getElementById('tab-history').style.display = tab === 'history' ? 'block' : 'none';
+        document.getElementById('tab-history').style.display = tab === 'history'  ? 'block' : 'none';
         document.querySelectorAll('.tab').forEach((el, i) => {
           el.classList.toggle('active', (i === 0 && tab === 'current') || (i === 1 && tab === 'history'));
         });
@@ -243,8 +403,7 @@
       async function manualSignOut(name) {
         if (!confirm(`Sign out ${name}?`)) return;
         await fetch('/api/signout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ name })
         });
       }
@@ -256,27 +415,73 @@
 
       function exportCSV(type) {
         const rows = type === 'current' ? currentVisitors : historyData;
-        if (rows.length === 0) { alert('Nothing to export.'); return; }
+        if (!rows.length) { alert('Nothing to export.'); return; }
         let csv = type === 'current'
           ? 'Name,Project,Signed In At\r\n'
           : 'Name,Project,Signed In At,Signed Out At\r\n';
         rows.forEach(v => {
           const n = (v.name||'').replace(/"/g,'""');
           const p = (v.project||'').replace(/"/g,'""');
-          if (type === 'current') {
-            csv += `"${n}","${p}","${formatTime(v.timeIn)}"\r\n`;
-          } else {
-            csv += `"${n}","${p}","${formatTime(v.timeIn)}","${formatTime(v.timeOut)}"\r\n`;
-          }
+          csv += type === 'current'
+            ? `"${n}","${p}","${formatTime(v.timeIn)}"\r\n`
+            : `"${n}","${p}","${formatTime(v.timeIn)}","${formatTime(v.timeOut)}"\r\n`;
         });
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = `versa-${type}-${new Date().toISOString().slice(0,10)}.csv`;
+        a.download = `versa-monitor-${type}-${new Date().toISOString().slice(0,10)}.csv`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a);
         URL.revokeObjectURL(url);
       }
+
+
+      async function openPersonModal(name) {
+        document.getElementById('personModalName').textContent = name;
+        document.getElementById('personModalSub').textContent = 'Loading…';
+        document.getElementById('personModalBody').innerHTML = '<div style="padding:32px;text-align:center;color:#aaa">Loading…</div>';
+        document.getElementById('personModal').classList.add('open');
+        try {
+          const res = await fetch('/api/history/person/' + encodeURIComponent(name));
+          const entries = await res.json();
+          document.getElementById('personModalSub').textContent =
+            entries.length + ' session' + (entries.length !== 1 ? 's' : '') + ' on record';
+          if (!entries.length) {
+            document.getElementById('personModalBody').innerHTML =
+              '<div style="padding:32px;text-align:center;color:#aaa;font-size:14px">No history found.</div>';
+            return;
+          }
+          let html = '<table><thead><tr><th>Date</th><th>In</th><th>Out</th><th>Duration</th></tr></thead><tbody>';
+          entries.forEach(function(e) {
+            const inD  = e.timeIn  ? new Date(e.timeIn)  : null;
+            const outD = e.timeOut ? new Date(e.timeOut) : null;
+            const dateStr = inD ? inD.toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '—';
+            const inStr   = inD  ? inD.toLocaleTimeString('en-GB',  { hour:'numeric', minute:'2-digit', hour12:true }).toLowerCase() : '—';
+            const outStr  = outD ? outD.toLocaleTimeString('en-GB', { hour:'numeric', minute:'2-digit', hour12:true }).toLowerCase() : 'Still in';
+            let durStr = '—';
+            if (inD && outD) {
+              const mins = Math.round((outD - inD) / 60000);
+              durStr = mins < 60 ? mins + 'm' : Math.floor(mins/60) + 'h ' + (mins % 60) + 'm';
+            }
+            html += '<tr><td>' + dateStr + '</td><td>' + inStr + '</td><td>' + outStr + '</td><td>' + durStr + '</td></tr>';
+          });
+          html += '</tbody></table>';
+          document.getElementById('personModalBody').innerHTML = html;
+        } catch(e) {
+          document.getElementById('personModalBody').innerHTML =
+            '<div style="padding:32px;text-align:center;color:#c00;font-size:14px">Could not load history.</div>';
+        }
+      }
+
+      function closePersonModal() {
+        document.getElementById('personModal').classList.remove('open');
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('personModal').addEventListener('click', function(e) {
+          if (e.target === this) closePersonModal();
+        });
+      });
 
       function escHtml(str) {
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
