@@ -35,22 +35,22 @@
       }
 
       #greeting {
-        font-size: 13vw; font-weight: 900;
+        font-size: 8vw; font-weight: 900;
         text-transform: uppercase; color: #1a1a1a;
         line-height: 0.85; letter-spacing: -0.01em; width: 100%;
       }
 
       #nameText {
-        font-size: 10vw; font-weight: 900;
+        font-size: 7vw; font-weight: 900;
         text-transform: uppercase; color: #1a1a1a;
         line-height: 0.9; letter-spacing: -0.01em;
         width: 100%; word-break: break-word;
       }
 
       #subText {
-        font-size: 5vw; font-weight: bold;
+        font-size: 3vw; font-weight: bold;
         text-transform: uppercase; color: #ccc;
-        letter-spacing: 0.1em; margin-top: 14px;
+        letter-spacing: 0.1em; margin-top: 10px;
       }
 
       button {
@@ -84,6 +84,19 @@
         pointer-events: none;
       }
       body > * { position: relative; z-index: 1; }
+
+      /* Notice banner */
+      #noticeBanner {
+        width: 100%; background: #f5f0e8; color: #5a4a2a;
+        border-radius: 12px; padding: 12px 18px;
+        font-size: 15px; line-height: 1.5;
+        display: none; flex-shrink: 0; margin-top: 16px;
+        border-left: 4px solid #c9a84c;
+      }
+      #noticeBanner .notice-label {
+        font-size: 11px; font-weight: bold; letter-spacing: 0.08em;
+        text-transform: uppercase; color: #c9a84c; margin-bottom: 4px;
+      }
     </style>
   </head>
   <body>
@@ -102,6 +115,7 @@
       <div id="nameText"></div>
       <div id="subText"></div>
     </div>
+    <div id="noticeBanner"><div class="notice-label">Today's notice</div><div id="noticeText"></div></div>
     <button onclick="goHome()">Close</button>
     <div id="timerBar"></div>
 
@@ -147,8 +161,8 @@
 
       // Scale down for long names
       const nameEl = document.getElementById('nameText');
-      if (name.length > 10) nameEl.style.fontSize = '11vw';
-      if (name.length > 16) nameEl.style.fontSize = '8vw';
+      if (name.length > 10) nameEl.style.fontSize = '6vw';
+      if (name.length > 16) nameEl.style.fontSize = '5vw';
 
       // ── Timer (3s auto close + red bar) ──
       let timeLeft = 3;
@@ -163,7 +177,7 @@
 
       async function loadWeather() {
         try {
-          const url = 'https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1';
+          const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1';
           const res = await fetch(url);
           const data = await res.json();
           const temp = Math.round(data.current.temperature_2m);
@@ -199,6 +213,15 @@
         if (el) el.innerHTML = dayName + ' ' + day + getDaySuffix(day) + ' ' + month + '<br>' + time;
       }
       setInterval(updateClock, 1000); updateClock();
+
+      // Load notice
+      fetch('/api/notice').then(r => r.json()).then(data => {
+        if (data && data.text) {
+          document.getElementById('noticeText').textContent = data.text;
+          document.getElementById('noticeBanner').style.display = 'block';
+        }
+      }).catch(() => {});
+
       function goHome() { clearInterval(t); window.location.href = 'index.html'; }
     </script>
   </body>
