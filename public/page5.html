@@ -41,7 +41,7 @@
       }
 
       #nameText {
-        font-size: 8vw; font-weight: 900;
+        font-size: 6vw; font-weight: 900;
         text-transform: uppercase; color: #1a1a1a;
         line-height: 0.9; letter-spacing: -0.01em;
         width: 100%; word-break: break-word;
@@ -148,7 +148,7 @@
 
       async function loadWeather() {
         try {
-          const url = 'https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1';
+          const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1';
           const res = await fetch(url);
           const data = await res.json();
           const temp = Math.round(data.current.temperature_2m);
