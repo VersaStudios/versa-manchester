@@ -41,14 +41,14 @@
       }
 
       #nameText {
-        font-size: 6vw; font-weight: 900;
+        font-size: 36px; font-weight: 900;
         text-transform: uppercase; color: #1a1a1a;
         line-height: 0.9; letter-spacing: -0.01em;
         width: 100%; word-break: break-word;
       }
 
       #subText {
-        font-size: 4.5vw; font-weight: bold;
+        font-size: 16px; font-weight: bold;
         text-transform: uppercase; color: #ccc;
         letter-spacing: 0.1em; margin-top: 14px;
       }
@@ -132,8 +132,8 @@
 
       // Scale down for long names
       const nameEl = document.getElementById('nameText');
-      if (name.length > 10) nameEl.style.fontSize = '11vw';
-      if (name.length > 16) nameEl.style.fontSize = '8vw';
+      if (name.length > 10) nameEl.style.fontSize = '32px';
+      if (name.length > 16) nameEl.style.fontSize = '26px';
 
       // ── Timer (3s auto close + red bar) ──
       let timeLeft = 3;
