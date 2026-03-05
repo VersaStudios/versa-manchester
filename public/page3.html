@@ -9,101 +9,156 @@
 
       body {
         background: #ffffff;
-        display: flex; flex-direction: column; align-items: center;
-        min-height: 100vh;
+        display: flex; flex-direction: column;
+        align-items: center;
+        height: 100vh; overflow: hidden;
         font-family: 'Brother1816', Arial, sans-serif;
       }
 
       #topBar {
-        width: 100%; display: flex;
-        justify-content: space-between; align-items: flex-start;
-        padding: 28px 40px 0;
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 24px 36px 0; flex-shrink: 0; width: 100%;
+      }
+      #logo { width: 110px; cursor: pointer; }
+      #logo img { width: 100%; display: block; }
+      #topRight { text-align: right; }
+      #clock { font-size: 16px; font-weight: bold; line-height: 1.5; color: #1a1a1a; }
+      #weatherBlock { margin-top: 4px; text-align: right; }
+      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+      #weatherIcon { font-size: 16px; }
+      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; }
+      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; }
+
+      #heading { padding: 20px 36px 0; flex-shrink: 0; width: 100%; text-align: center; }
+      #heading h1 {
+        font-size: 11vw; font-weight: 900;
+        text-transform: uppercase; color: #1a1a1a;
+        line-height: 0.85; letter-spacing: -0.01em;
       }
 
-      #logo { width: 130px; cursor: pointer; }
-
-      #clock {
-        text-align: right; font-size: 18px;
-        font-weight: bold; line-height: 1.5; color: #1a1a1a;
-      }
-
-      #box {
-        background: #f7f7f7;
-        border: 1.5px solid #e0e0e0;
-        padding: 36px 40px 40px;
-        border-radius: 24px;
-        width: 420px;
-        margin-top: 32px;
-        text-align: center;
-      }
-
-      #box h2 {
-        font-size: 30px; margin-bottom: 22px;
-        letter-spacing: 0.06em; text-transform: uppercase;
+      #searchArea {
+        flex: 1; padding: 28px 36px 24px;
+        display: flex; flex-direction: column; gap: 12px;
+        overflow: hidden; width: 100%; max-width: 560px;
       }
 
       #searchWrap { position: relative; }
 
       input[type="text"] {
         width: 100%; padding: 18px 20px;
-        border-radius: 14px; border: 1.5px solid #d0d0d0;
-        font-size: 22px; font-family: inherit;
-        background: white; color: #1a1a1a;
-        outline: none; transition: border-color 0.2s;
+        border-radius: 14px; border: 2px solid #1a1a1a;
+        font-size: 24px; font-family: inherit;
+        background: white; color: #1a1a1a; outline: none;
         -webkit-user-select: text;
       }
       input[type="text"]:focus { border-color: #1a1a1a; }
 
       #results {
         display: none; position: absolute; top: 100%; left: 0; right: 0;
-        background: white; border: 1.5px solid #d0d0d0; border-top: none;
+        background: white; border: 2px solid #1a1a1a; border-top: none;
         border-radius: 0 0 14px 14px; z-index: 10;
-        max-height: 300px; overflow-y: auto;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-        text-align: left;
+        max-height: 280px; overflow-y: auto;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12); text-align: left;
       }
-
       .result-item {
         padding: 16px 20px; cursor: pointer;
         border-bottom: 1px solid #f0f0f0;
         -webkit-tap-highlight-color: transparent;
       }
       .result-item:last-child { border-bottom: none; }
-      .result-item:active { background: #f0f0f0; }
-      .result-name { font-size: 18px; font-weight: bold; color: #1a1a1a; }
+      .result-item:active { background: #f5f5f5; }
+      .result-name { font-size: 20px; font-weight: bold; color: #1a1a1a; }
       .result-meta { font-size: 14px; color: #888; margin-top: 3px; }
 
-      #status { margin-top: 14px; font-size: 15px; color: #c00; min-height: 1.2em; }
+      #status { font-size: 14px; color: #c00; min-height: 1.2em; padding: 0 4px; }
+
+      #timerBar {
+        position: fixed; bottom: 0; left: 0;
+        height: 4px; background: #1a1a1a;
+        width: 100%; transform-origin: left;
+        transition: transform 1s linear;
+      }
+
+      /* ── Background image ── */
+      body::before {
+        content: '';
+        position: fixed; inset: 0; z-index: 0;
+        background-image: url('studio-bw.jpg');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.10;
+        pointer-events: none;
+      }
+      /* Ensure all direct children sit above the bg */
+      body > * { position: relative; z-index: 1; }
+
+      /* ── Safe edge padding ── */
+      body { padding-left: max(24px, env(safe-area-inset-left));
+             padding-right: max(24px, env(safe-area-inset-right)); }
+
+      #noticeBanner {
+        width: 100%; max-width: 560px;
+        background: #1a1a1a; color: white;
+        border-radius: 10px; padding: 10px 16px;
+        font-size: 13px; font-weight: bold;
+        letter-spacing: 0.03em; display: none; flex-shrink: 0;
+      }
     </style>
   </head>
   <body>
 
     <div id="topBar">
-      <img id="logo" src="Versa Logo.png" alt="Versa">
-      <div id="clock"></div>
+      <div id="logo"><img src="Versa Logo.png" alt="Versa"></div>
+      <div id="topRight">
+        <div id="clock"></div>
+        <div id="weatherBlock">
+          <div id="weatherLine">
+            <span id="weatherIcon"></span>
+            <span id="weatherTemp"></span>
+          </div>
+          <div id="weatherSun"></div>
+        </div>
+      </div>
     </div>
 
-    <div id="box">
-      <h2>Sign Out</h2>
+    <div id="heading"><h1>Sign<br>Out</h1></div>
+
+    <div id="searchArea">
       <div id="searchWrap">
         <input id="searchInput" type="text" placeholder="Type your name…"
-               autocomplete="off" autocorrect="off" autocapitalize="words"
-               inputmode="text">
+               autocomplete="off" autocorrect="off" autocapitalize="words" inputmode="text">
         <div id="results"></div>
       </div>
+      <div id="noticeBanner"></div>
       <div id="status"></div>
     </div>
 
+    <div id="timerBar"></div>
+
     <script>
       let currentVisitors = [];
+
+      // ── Inactivity timer ──
+      let timer, timeLeft = 30;
+      const bar = document.getElementById('timerBar');
+      function resetTimer() {
+        clearInterval(timer); timeLeft = 30;
+        bar.style.transform = 'scaleX(1)';
+        timer = setInterval(() => {
+          timeLeft--;
+          bar.style.transform = `scaleX(${timeLeft / 30})`;
+          if (timeLeft <= 0) { clearInterval(timer); window.location.href = 'index.html'; }
+        }, 1000);
+      }
+      document.addEventListener('touchstart', resetTimer);
+      document.addEventListener('click', resetTimer);
+      resetTimer();
 
       async function loadCurrentVisitors() {
         try {
           const res = await fetch('/api/visitors');
           currentVisitors = await res.json();
-        } catch (e) {
-          document.getElementById('status').textContent = 'Could not load sign-in list.';
-        }
+        } catch (e) { document.getElementById('status').textContent = 'Could not load sign-in list.'; }
       }
 
       document.getElementById('searchInput').addEventListener('input', function () {
@@ -140,8 +195,8 @@
 
       function signOut(name) {
         document.getElementById('results').style.display = 'none';
-        // Navigate instantly — API call happens in background
         sessionStorage.setItem('visitorName', name);
+        sessionStorage.setItem('isNewVisitor', 'false');
         window.location.href = 'page5.html';
         fetch('/api/signout', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -155,6 +210,32 @@
 
       document.getElementById('logo').onclick = () => window.location.href = 'index.html';
 
+
+
+      async function loadWeather() {
+        try {
+          const url = 'https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1';
+          const res = await fetch(url);
+          const data = await res.json();
+          const temp = Math.round(data.current.temperature_2m);
+          const code = data.current.weathercode;
+          const sunrise = data.daily.sunrise[0].split('T')[1];
+          const sunset  = data.daily.sunset[0].split('T')[1];
+          const icMap = {0:'sunny',1:'partly',2:'partly',3:'cloudy',45:'foggy',48:'foggy',51:'drizzle',61:'rainy',71:'snowy',80:'rainy',95:'stormy'};
+          const emojiMap = {'sunny':'&#x2600;','partly':'&#x26C5;','cloudy':'&#x2601;','foggy':'&#x1F32B;','drizzle':'&#x1F326;','rainy':'&#x1F327;','snowy':'&#x1F328;','stormy':'&#x26C8;'};
+          const key = Object.keys(icMap).reverse().find(k => code >= parseInt(k)) || '0';
+          const emoji = emojiMap[icMap[key]] || '&#x1F321;';
+          const el = document.getElementById('weatherTemp');
+          const ic = document.getElementById('weatherIcon');
+          const su = document.getElementById('weatherSun');
+          if (el) el.textContent = temp + String.fromCharCode(176) + 'C';
+          if (ic) ic.innerHTML = emoji;
+          if (su) su.innerHTML = 'Rise ' + sunrise + ' &nbsp; Set ' + sunset;
+        } catch (e) {}
+      }
+      loadWeather();
+      setInterval(loadWeather, 10 * 60 * 1000);
+
       function getDaySuffix(d) {
         if (d >= 11 && d <= 13) return 'th';
         switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
@@ -165,10 +246,16 @@
         const day = now.getDate();
         const month = now.toLocaleString('en-GB', { month: 'long' });
         const time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-        document.getElementById('clock').innerHTML = `${dayName} ${day}${getDaySuffix(day)} ${month}<br>${time}`;
+        const el = document.getElementById('clock');
+        if (el) el.innerHTML = dayName + ' ' + day + getDaySuffix(day) + ' ' + month + '<br>' + time;
       }
-      setInterval(updateClock, 1000);
-      updateClock();
+      setInterval(updateClock, 1000); updateClock();
+
+      // Load notice
+      fetch('/api/notice').then(r => r.json()).then(data => {
+        const el = document.getElementById('noticeBanner');
+        if (data && data.text) { el.textContent = '\u2139\ufe0f ' + data.text; el.style.display = 'block'; }
+      }).catch(() => {});
       loadCurrentVisitors();
       document.getElementById('searchInput').focus();
     </script>
