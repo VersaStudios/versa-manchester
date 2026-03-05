@@ -9,287 +9,296 @@
 
       body {
         background: #ffffff;
-        display: flex; flex-direction: column; align-items: center;
-        min-height: 100vh;
+        display: flex; flex-direction: column;
+        align-items: center;
+        height: 100vh; overflow: hidden;
         font-family: 'Brother1816', Arial, sans-serif;
       }
 
       #topBar {
-        width: 100%; display: flex;
-        justify-content: space-between; align-items: flex-start;
-        padding: 28px 40px 0;
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 24px 36px 0; flex-shrink: 0; width: 100%;
+      }
+      #logo { width: 110px; cursor: pointer; }
+      #logo img { width: 100%; display: block; }
+      #topRight { text-align: right; }
+      #clock { font-size: 16px; font-weight: bold; line-height: 1.5; color: #1a1a1a; }
+      #weatherBlock { margin-top: 4px; text-align: right; }
+      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+      #weatherIcon { font-size: 16px; }
+      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; }
+      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; }
+
+      #heading { padding: 20px 36px 0; flex-shrink: 0; width: 100%; text-align: center; }
+      #heading h1 {
+        font-size: 11vw; font-weight: 900;
+        text-transform: uppercase; color: #1a1a1a;
+        line-height: 0.85; letter-spacing: -0.01em;
       }
 
-      #logo { width: 130px; cursor: pointer; }
-
-      #clock {
-        text-align: right; font-size: 18px;
-        font-weight: bold; line-height: 1.5; color: #1a1a1a;
-      }
-
-      #box {
-        background: #f7f7f7;
-        border: 1.5px solid #e0e0e0;
-        padding: 36px 40px 40px;
-        border-radius: 24px;
-        width: 420px;
-        margin-top: 32px;
-        text-align: center;
-      }
-
-      #box h2 {
-        font-size: 30px; margin-bottom: 22px;
-        letter-spacing: 0.06em; text-transform: uppercase;
+      #searchArea {
+        flex: 1; padding: 28px 36px 24px;
+        display: flex; flex-direction: column; gap: 12px;
+        overflow: hidden; width: 100%; max-width: 560px;
       }
 
       #searchWrap { position: relative; }
 
       input[type="text"] {
         width: 100%; padding: 18px 20px;
-        border-radius: 14px; border: 1.5px solid #d0d0d0;
-        font-size: 22px; font-family: inherit;
-        background: white; color: #1a1a1a;
-        outline: none; transition: border-color 0.2s;
-        /* Triggers native keyboard on iPad */
+        border-radius: 14px; border: 2px solid #1a1a1a;
+        font-size: 24px; font-family: inherit;
+        background: white; color: #1a1a1a; outline: none;
         -webkit-user-select: text;
       }
       input[type="text"]:focus { border-color: #1a1a1a; }
 
       #results {
         display: none; position: absolute; top: 100%; left: 0; right: 0;
-        background: white; border: 1.5px solid #d0d0d0; border-top: none;
+        background: white; border: 2px solid #1a1a1a; border-top: none;
         border-radius: 0 0 14px 14px; z-index: 10;
-        max-height: 300px; overflow-y: auto;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.1);
-        text-align: left;
+        max-height: 260px; overflow-y: auto;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12); text-align: left;
       }
-
       .result-item {
         padding: 16px 20px; cursor: pointer;
-        border-bottom: 1px solid #f0f0f0; transition: background 0.15s;
+        border-bottom: 1px solid #f0f0f0;
         -webkit-tap-highlight-color: transparent;
       }
       .result-item:last-child { border-bottom: none; }
-      .result-item:active { background: #f0f0f0; }
-      .result-name { font-size: 18px; font-weight: bold; color: #1a1a1a; }
+      .result-item:active { background: #f5f5f5; }
+      .result-name { font-size: 20px; font-weight: bold; color: #1a1a1a; }
       .result-meta { font-size: 14px; color: #888; margin-top: 3px; }
 
-      .result-new {
-        padding: 16px 20px; cursor: pointer;
-        color: #1a1a1a; font-size: 16px; font-weight: bold;
-        border-top: 1px solid #eee; background: #fafafa;
-        -webkit-tap-highlight-color: transparent;
+      #newVisitorForm {
+        display: none; flex-direction: column; gap: 10px; flex-shrink: 0;
       }
-      .result-new:active { background: #f0f0f0; }
-
-      #newPersonForm {
-        display: none; margin-top: 22px; text-align: left;
-        border-top: 1.5px solid #e8e8e8; padding-top: 22px;
-      }
-      #newPersonForm label {
-        font-size: 12px; color: #666; display: block;
-        margin-bottom: 6px; letter-spacing: 0.06em; text-transform: uppercase;
-      }
-      #newPersonForm input,
-      #newPersonForm select {
-        width: 100%; padding: 14px 16px;
-        border-radius: 12px; border: 1.5px solid #d0d0d0;
-        font-size: 18px; font-family: inherit; margin-bottom: 14px;
-        background: white; outline: none;
-        -webkit-user-select: text;
-      }
-      #newPersonForm input:focus,
-      #newPersonForm select:focus { border-color: #1a1a1a; }
-
-      .btn {
-        width: 100%; padding: 20px; font-size: 22px;
+      #newVisitorForm.visible { display: flex; }
+      #newVisitorForm input { font-size: 18px; padding: 14px 18px; }
+      #newVisitorForm label { font-size: 13px; color: #888; padding-left: 4px; }
+      #confirmBtn {
+        padding: 16px; font-size: 20px; font-weight: bold;
         border-radius: 14px; cursor: pointer; border: none;
-        font-family: 'Brother1816', Arial, sans-serif;
-        letter-spacing: 0.04em; margin-top: 4px;
+        background: #1a1a1a; color: white; font-family: inherit;
+        letter-spacing: 0.04em; text-transform: uppercase;
         -webkit-tap-highlight-color: transparent;
-        transition: opacity 0.15s;
-      }
-      .btn:active { opacity: 0.8; }
-      .btn-black { background: #1a1a1a; color: white; }
-      .btn-outline {
-        background: white; color: #1a1a1a;
-        border: 1.5px solid #d0d0d0; margin-top: 10px;
       }
 
-      #status { margin-top: 14px; font-size: 15px; color: #c00; min-height: 1.2em; }
+      #status { font-size: 14px; color: #c00; min-height: 1.2em; padding: 0 4px; }
+
+      #timerBar {
+        position: fixed; bottom: 0; left: 0;
+        height: 4px; background: #1a1a1a;
+        width: 100%; transform-origin: left;
+        transition: transform 1s linear;
+      }
+
+      body::before {
+        content: ''; position: fixed; inset: 0; z-index: 0;
+        background-image: url('studio-bw.jpg');
+        background-size: cover; background-position: center;
+        opacity: 0.10; pointer-events: none;
+      }
+      body > * { position: relative; z-index: 1; }
+
+      body { padding-left: max(24px, env(safe-area-inset-left));
+             padding-right: max(24px, env(safe-area-inset-right)); }
     </style>
   </head>
   <body>
 
     <div id="topBar">
-      <img id="logo" src="Versa Logo.png" alt="Versa">
-      <div id="clock"></div>
+      <div id="logo"><img src="Versa Logo.png" alt="Versa"></div>
+      <div id="topRight">
+        <div id="clock"></div>
+        <div id="weatherBlock">
+          <div id="weatherLine">
+            <span id="weatherIcon"></span>
+            <span id="weatherTemp"></span>
+          </div>
+          <div id="weatherSun"></div>
+        </div>
+      </div>
     </div>
 
-    <div id="box">
-      <h2>Sign In</h2>
+    <div id="heading"><h1>Sign<br>In</h1></div>
 
+    <div id="searchArea">
       <div id="searchWrap">
         <input id="searchInput" type="text" placeholder="Type your name…"
-               autocomplete="off" autocorrect="off" autocapitalize="words"
-               inputmode="text">
+               autocomplete="off" autocorrect="off" autocapitalize="words" inputmode="text">
         <div id="results"></div>
       </div>
 
-      <div id="newPersonForm">
-        <div id="jobTitleWrap">
-          <label>Job Title</label>
-          <input id="newJobTitle" type="text" placeholder="e.g. Studio Engineer"
-                 autocomplete="off" autocorrect="off" inputmode="text">
-        </div>
-        <label>Project</label>
-        <select id="newProject"></select>
-        <button class="btn btn-black" onclick="registerAndSignIn()">Register &amp; Sign In</button>
-        <button class="btn btn-outline" onclick="cancelNew()">Cancel</button>
+      <div id="newVisitorForm">
+        <label for="jobTitleInput">Job title (optional)</label>
+        <input id="jobTitleInput" type="text" placeholder="e.g. Producer"
+               autocomplete="off" autocapitalize="words" inputmode="text">
+        <label for="companyInput">Company (optional)</label>
+        <input id="companyInput" type="text" placeholder="e.g. BBC"
+               autocomplete="off" inputmode="text">
+        <button id="confirmBtn" onclick="confirmSignIn()">Sign In</button>
       </div>
 
       <div id="status"></div>
     </div>
 
+    <div id="timerBar"></div>
+
     <script>
-      let allPeople = [];
-      let allProjects = [];
-      let selectedPerson = null;
-      let newPersonName = '';
+      let peopleData = null;
+
+      // Inactivity timer
+      let timer, timeLeft = 30;
+      const bar = document.getElementById('timerBar');
+      function resetTimer() {
+        clearInterval(timer); timeLeft = 30;
+        bar.style.transform = 'scaleX(1)';
+        timer = setInterval(() => {
+          timeLeft--;
+          bar.style.transform = 'scaleX(' + (timeLeft / 30) + ')';
+          if (timeLeft <= 0) { clearInterval(timer); window.location.href = 'index.html'; }
+        }, 1000);
+      }
+      document.addEventListener('touchstart', resetTimer);
+      document.addEventListener('click', resetTimer);
+      resetTimer();
 
       async function loadPeople() {
         try {
-          const res = await fetch('/api/people');
-          const data = await res.json();
-          allProjects = data.projects;
-          allPeople = [];
-          data.projects.forEach(proj => {
-            if (!proj.visitorProject) {
-              proj.people.forEach(p => allPeople.push({ ...p, projectName: proj.name, projectId: proj.id }));
-            }
-          });
-          populateProjectDropdown();
-        } catch (e) {
-          document.getElementById('status').textContent = 'Could not load people list.';
-        }
+          const res = await fetch('/api/people/active');
+          peopleData = await res.json();
+        } catch (e) { document.getElementById('status').textContent = 'Could not load people list.'; }
       }
-
-      function populateProjectDropdown() {
-        const sel = document.getElementById('newProject');
-        sel.innerHTML = '';
-        allProjects.forEach(proj => {
-          const opt = document.createElement('option');
-          opt.value = proj.id;
-          opt.textContent = proj.name;
-          sel.appendChild(opt);
-        });
-        updateJobTitleVisibility();
-      }
-
-      function updateJobTitleVisibility() {
-        const projectId = document.getElementById('newProject').value;
-        const project = allProjects.find(p => p.id === projectId);
-        document.getElementById('jobTitleWrap').style.display =
-          project && project.visitorProject ? 'none' : 'block';
-      }
-
-      document.getElementById('newProject').addEventListener('change', updateJobTitleVisibility);
 
       document.getElementById('searchInput').addEventListener('input', function () {
         const query = this.value.trim().toLowerCase();
         const resultsBox = document.getElementById('results');
-        document.getElementById('newPersonForm').style.display = 'none';
-        selectedPerson = null;
-
+        document.getElementById('newVisitorForm').classList.remove('visible');
+        document.getElementById('status').textContent = '';
         if (query.length < 1) { resultsBox.style.display = 'none'; return; }
 
-        const matches = allPeople.filter(p => p.name.toLowerCase().includes(query));
+        const matches = [];
+        if (peopleData) {
+          peopleData.projects.forEach(function(proj) {
+            proj.people.forEach(function(p) {
+              if (p.name.toLowerCase().includes(query)) {
+                matches.push(Object.assign({}, p, { projectName: proj.name, projectId: proj.id, isVisitor: proj.visitorProject }));
+              }
+            });
+          });
+        }
+
         resultsBox.innerHTML = '';
 
-        matches.forEach(p => {
-          const div = document.createElement('div');
-          div.className = 'result-item';
-          div.innerHTML = `<div class="result-name">${escHtml(p.name)}</div>
-                           <div class="result-meta">${escHtml(p.jobTitle)} · ${escHtml(p.projectName)}</div>`;
-          div.onclick = () => selectPerson(p);
-          resultsBox.appendChild(div);
-        });
+        const newDiv = document.createElement('div');
+        newDiv.className = 'result-item';
+        newDiv.innerHTML = '<div class="result-name" style="color:#888">+ Sign in as a visitor</div><div class="result-meta">Not on the list</div>';
+        newDiv.onclick = function() { showNewVisitorForm(document.getElementById('searchInput').value.trim()); };
 
-        const addNew = document.createElement('div');
-        addNew.className = 'result-new';
-        addNew.textContent = `+ Add "${this.value.trim()}" as a new person`;
-        addNew.onclick = () => showNewPersonForm(this.value.trim());
-        resultsBox.appendChild(addNew);
-
+        if (matches.length === 0) {
+          resultsBox.appendChild(newDiv);
+        } else {
+          matches.forEach(function(p) {
+            const div = document.createElement('div');
+            div.className = 'result-item';
+            div.innerHTML = '<div class="result-name">' + escHtml(p.name) + '</div><div class="result-meta">' + escHtml(p.projectName) + (p.jobTitle ? ' \u00b7 ' + escHtml(p.jobTitle) : '') + '</div>';
+            div.onclick = function() { signIn(p); };
+            resultsBox.appendChild(div);
+          });
+          resultsBox.appendChild(newDiv);
+        }
         resultsBox.style.display = 'block';
       });
 
-      document.addEventListener('click', e => {
+      document.addEventListener('click', function(e) {
         if (!document.getElementById('searchWrap').contains(e.target))
           document.getElementById('results').style.display = 'none';
       });
 
-      function selectPerson(person) {
+      function showNewVisitorForm(name) {
         document.getElementById('results').style.display = 'none';
-        // Navigate instantly — API call happens in background
+        document.getElementById('searchInput').value = name;
+        document.getElementById('newVisitorForm').classList.add('visible');
+        document.getElementById('jobTitleInput').focus();
+        sessionStorage.setItem('isNewVisitor', 'true');
+      }
+
+      function signIn(person) {
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('searchInput').value = person.name;
         sessionStorage.setItem('visitorName', person.name);
-        window.location.href = 'page4.html';
+        sessionStorage.setItem('visitorProject', person.projectName);
+        sessionStorage.setItem('visitorJobTitle', person.jobTitle || '');
+        sessionStorage.setItem('isNewVisitor', 'false');
         fetch('/api/signin', {
           method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ personId: person.id, name: person.name, jobTitle: person.jobTitle, project: person.projectName })
-        }).catch(() => {});
-      }
-
-      function showNewPersonForm(name) {
-        newPersonName = name;
-        document.getElementById('searchInput').value = name;
-        document.getElementById('results').style.display = 'none';
-        document.getElementById('newPersonForm').style.display = 'block';
-        updateJobTitleVisibility();
-        document.getElementById('newJobTitle').focus();
-      }
-
-      function cancelNew() {
-        document.getElementById('newPersonForm').style.display = 'none';
-        document.getElementById('searchInput').value = '';
-        document.getElementById('searchInput').focus();
-        newPersonName = '';
-      }
-
-      async function registerAndSignIn() {
-        const jobTitle = document.getElementById('newJobTitle').value.trim();
-        const projectId = document.getElementById('newProject').value;
-        const status = document.getElementById('status');
-        if (!newPersonName) { status.textContent = 'No name entered.'; return; }
-
-        const project = allProjects.find(p => p.id === projectId);
-        const isVisitor = project && project.visitorProject;
-
-        // Register first (need the person ID), then navigate instantly
-        try {
-          const regRes = await fetch('/api/people', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: newPersonName, jobTitle: isVisitor ? '' : jobTitle, projectId })
-          });
-          const regData = await regRes.json();
-          if (regRes.status === 409) { status.textContent = 'That name already exists.'; return; }
-          if (!regRes.ok) { status.textContent = regData.error || 'Could not register.'; return; }
-
-          // Navigate immediately, sign in in background
-          sessionStorage.setItem('visitorName', newPersonName);
+          body: JSON.stringify({ personId: person.id, name: person.name, jobTitle: person.jobTitle || '', project: person.projectName })
+        }).then(function(r) { return r.json(); }).then(function(data) {
+          if (data.error) { document.getElementById('status').textContent = data.error; return; }
           window.location.href = 'page4.html';
-          fetch('/api/signin', {
+        }).catch(function() { document.getElementById('status').textContent = 'Could not sign in.'; });
+      }
+
+      async function confirmSignIn() {
+        const name     = document.getElementById('searchInput').value.trim();
+        const jobTitle = document.getElementById('jobTitleInput').value.trim();
+        const company  = document.getElementById('companyInput').value.trim();
+        if (!name) { document.getElementById('status').textContent = 'Please enter your name.'; return; }
+        const visitorProj = peopleData && peopleData.projects.find(function(p) { return p.visitorProject; });
+        const projectName = visitorProj ? visitorProj.name : 'Visitor';
+        const projectId   = visitorProj ? visitorProj.id   : null;
+        try {
+          if (projectId) {
+            await fetch('/api/people', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: name, jobTitle: jobTitle, company: company, projectId: projectId })
+            });
+          }
+          const res = await fetch('/api/signin', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ personId: regData.person.id, name: newPersonName, jobTitle: isVisitor ? '' : jobTitle, project: project ? project.name : '' })
-          }).catch(() => {});
-        } catch (e) { status.textContent = 'Could not reach server.'; }
+            body: JSON.stringify({ name: name, jobTitle: jobTitle, project: projectName })
+          });
+          const data = await res.json();
+          if (data.error && data.error !== 'Name already exists') {
+            document.getElementById('status').textContent = data.error; return;
+          }
+          sessionStorage.setItem('visitorName', name);
+          sessionStorage.setItem('visitorProject', projectName);
+          sessionStorage.setItem('isNewVisitor', 'true');
+          window.location.href = 'page4.html';
+        } catch(e) { document.getElementById('status').textContent = 'Could not sign in.'; }
       }
 
       function escHtml(str) {
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
       }
 
-      document.getElementById('logo').onclick = () => window.location.href = 'index.html';
+      document.getElementById('logo').onclick = function() { window.location.href = 'index.html'; };
+
+      async function loadWeather() {
+        try {
+          const url = 'https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1';
+          const res = await fetch(url);
+          const data = await res.json();
+          const temp = Math.round(data.current.temperature_2m);
+          const code = data.current.weathercode;
+          const sunrise = data.daily.sunrise[0].split('T')[1];
+          const sunset  = data.daily.sunset[0].split('T')[1];
+          const icMap = {0:'sunny',1:'partly',2:'partly',3:'cloudy',45:'foggy',48:'foggy',51:'drizzle',61:'rainy',71:'snowy',80:'rainy',95:'stormy'};
+          const emojiMap = {'sunny':'&#x2600;','partly':'&#x26C5;','cloudy':'&#x2601;','foggy':'&#x1F32B;','drizzle':'&#x1F326;','rainy':'&#x1F327;','snowy':'&#x1F328;','stormy':'&#x26C8;'};
+          const key = Object.keys(icMap).reverse().find(function(k) { return code >= parseInt(k); }) || '0';
+          const emoji = emojiMap[icMap[key]] || '&#x1F321;';
+          const el = document.getElementById('weatherTemp');
+          const ic = document.getElementById('weatherIcon');
+          const su = document.getElementById('weatherSun');
+          if (el) el.textContent = temp + '\u00b0C';
+          if (ic) ic.innerHTML = emoji;
+          if (su) su.innerHTML = 'Rise ' + sunrise + '&nbsp;&nbsp;Set ' + sunset;
+        } catch (e) {}
+      }
+      loadWeather();
+      setInterval(loadWeather, 10 * 60 * 1000);
 
       function getDaySuffix(d) {
         if (d >= 11 && d <= 13) return 'th';
@@ -301,10 +310,11 @@
         const day = now.getDate();
         const month = now.toLocaleString('en-GB', { month: 'long' });
         const time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-        document.getElementById('clock').innerHTML = `${dayName} ${day}${getDaySuffix(day)} ${month}<br>${time}`;
+        const el = document.getElementById('clock');
+        if (el) el.innerHTML = dayName + ' ' + day + getDaySuffix(day) + ' ' + month + '<br>' + time;
       }
-      setInterval(updateClock, 1000);
-      updateClock();
+      setInterval(updateClock, 1000); updateClock();
+
       loadPeople();
       document.getElementById('searchInput').focus();
     </script>
