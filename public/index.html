@@ -4,167 +4,267 @@
     <title>Versa Manchester</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <style>
-      @font-face {
-        font-family: 'Brother1816';
-        src: url('brother1816-medium.otf') format('opentype');
-      }
-
+      @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
       * { box-sizing: border-box; margin: 0; padding: 0; }
-
-      html, body {
-        height: 100%;
-        overflow: hidden;
-      }
+      html, body { height: 100%; overflow: hidden; }
 
       body {
         background: #ffffff;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: space-between;
+        display: flex; flex-direction: column;
+        align-items: center; justify-content: flex-start;
         height: 100vh;
         font-family: 'Brother1816', Arial, sans-serif;
       }
 
       /* ── Top bar ── */
       #topBar {
-        width: 100%;
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        padding: 28px 40px 0;
-        flex-shrink: 0;
+        width: 100%; display: grid;
+        grid-template-columns: 40px 1fr 40px;
+        padding: 28px 40px 0; flex-shrink: 0;
+        align-items: start;
       }
 
       #adminBtn {
-        width: 36px;
-        opacity: 0.12;
-        cursor: pointer;
-        transition: opacity 0.3s;
+        width: 36px; opacity: 0.12; cursor: pointer; transition: opacity 0.3s;
       }
       #adminBtn:hover { opacity: 1; }
 
+      /* Clock + weather block */
+      #topRight { text-align: right; justify-self: end; }
+
       #clock {
-        text-align: right;
-        font-size: 20px;
-        font-weight: bold;
-        line-height: 1.5;
-        color: #1a1a1a;
+        font-size: 14px; font-weight: bold;
+        line-height: 1.5; color: #1a1a1a;
       }
 
-      /* ── Centre: Welcome + Logo ── */
+      #weatherBlock {
+        margin-top: 8px; text-align: right;
+        font-size: 14px; color: #444; line-height: 1.6;
+      }
+      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+      #weatherIcon { font-size: 16px; }
+      #weatherTemp { font-size: 14px; font-weight: bold; }
+      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; }
+
+      /* ── Centre: Logo ── */
       #centre {
-        display: flex;
-        flex-direction: column;
+        display: flex; flex-direction: column;
         align-items: center;
-        gap: 0px;
-        flex-shrink: 0;
       }
 
-      #welcome {
-        font-size: 48px;
-        font-weight: bold;
-        letter-spacing: 0.06em;
-        color: #1a1a1a;
-        text-transform: uppercase;
-        margin-bottom: 14px;
-        text-align: center;
-      }
+      #logoWrap { width: 380px; overflow: hidden; height: 160px; }
+      #logoWrap img { width: 100%; display: block; }
 
-      /* Logo cropped — show only top portion (wordmark) */
-      #logoWrap {
-        width: 220px;
-        overflow: hidden;
-        /* Adjust this height to crop below "Versa" wordmark.
-           Increase to show more, decrease to show less. */
-        height: 60px;
-      }
-      #logoWrap img {
-        width: 100%;
-        display: block;
+      #siteLabel {
+        font-size: 28px; font-weight: bold;
+        letter-spacing: 0.18em; color: #888;
+        text-transform: uppercase; margin-top: 14px;
       }
 
       /* ── Buttons ── */
+      #spacer { flex: 0 0 16px; }
       #buttons {
-        width: 100%;
-        display: flex;
-        padding: 0 28px 32px;
-        gap: 24px;
-        /* Two thirds of viewport height */
-        height: 66vh;
-        flex-shrink: 0;
+        width: 100%; display: flex;
+        padding: 0 28px 32px; gap: 24px;
+        flex: 1;
       }
 
       .action-btn {
-        flex: 1;
-        font-size: 52px;
-        font-weight: bold;
-        border-radius: 28px;
-        cursor: pointer;
-        border: none;
+        flex: 1; font-size: 72px; font-weight: bold;
+        border-radius: 28px; cursor: pointer; border: none;
         font-family: 'Brother1816', Arial, sans-serif;
-        letter-spacing: 0.04em;
-        background: #1a1a1a;
-        color: #ffffff;
+        letter-spacing: 0.04em; background: #1a1a1a; color: #ffffff;
         box-shadow: 0 6px 24px rgba(0,0,0,0.18);
         transition: transform 0.08s, box-shadow 0.08s;
-        /* iPad touch feedback */
         -webkit-tap-highlight-color: transparent;
+        text-transform: uppercase;
       }
-
       .action-btn:active {
         transform: scale(0.97);
         box-shadow: 0 2px 10px rgba(0,0,0,0.12);
       }
+
+      /* ── Background image ── */
+      body::before {
+        content: '';
+        position: fixed; inset: 0; z-index: 0;
+        background-image: url('studio-bw.jpg');
+        background-size: cover;
+        background-position: center;
+        opacity: 0.10;
+        pointer-events: none;
+      }
+      /* Ensure all direct children sit above the bg */
+      body > * { position: relative; z-index: 1; }
+
+      /* ── Safe edge padding ── */
+      body { padding-left: max(24px, env(safe-area-inset-left));
+             padding-right: max(24px, env(safe-area-inset-right)); }
+
+
     </style>
   </head>
   <body>
 
     <div id="topBar">
       <img id="adminBtn" src="List.png" alt="Admin" onclick="window.location.href='monitor.html'">
-      <div id="clock"></div>
-    </div>
-
-    <div id="centre">
-      <div id="welcome">Good Morning</div>
-      <div id="logoWrap">
-        <img src="Versa Logo.png" alt="Versa">
+      <div id="centre">
+        <div id="logoWrap"><img src="Versa Logo.png" alt="Versa"></div>
+        <div id="siteLabel">Manchester</div>
+      </div>
+      <div id="topRight">
+        <div id="clock"></div>
+        <div id="weatherBlock">
+          <div id="weatherLine">
+            <span id="weatherIcon">⛅</span>
+            <span id="weatherTemp">—°C</span>
+          </div>
+          <div id="weatherSun"></div>
+        </div>
       </div>
     </div>
 
+
+    <div id="spacer"></div>
     <div id="buttons">
-      <button class="action-btn" onclick="window.location.href='page2.html'">Sign In</button>
-      <button class="action-btn" onclick="window.location.href='page3.html'">Sign Out</button>
+      <button class="action-btn" onclick="window.location.href='page2.html'">In</button>
+      <button class="action-btn" onclick="window.location.href='page3.html'">Out</button>
     </div>
 
     <script>
+      // ── NFC ──
+      async function startNFC() {
+        if (!('NDEFReader' in window)) return;
+        try {
+          const reader = new NDEFReader();
+          await reader.scan();
+          reader.onreading = async (event) => {
+            const nfcId = event.serialNumber;
+            if (!nfcId) return;
+            try {
+              const res = await fetch('/api/nfc-tap', {
+                method: 'POST', headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ nfcId })
+              });
+              const data = await res.json();
+              if (res.status === 404) { showNfcMsg('Card not recognised'); return; }
+              if (!res.ok) return;
+              sessionStorage.setItem('visitorName', data.name);
+              window.location.href = data.action === 'signin' ? 'page4.html' : 'page5.html';
+            } catch (e) { showNfcMsg('Could not reach server'); }
+          };
+        } catch (e) {}
+      }
+
+      function showNfcMsg(msg) {
+        let el = document.getElementById('nfcMsg');
+        if (!el) {
+          el = document.createElement('div');
+          el.id = 'nfcMsg';
+          el.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;padding:14px 28px;border-radius:12px;font-size:18px;font-family:Brother1816,Arial,sans-serif;letter-spacing:0.04em;z-index:999;transition:opacity 0.4s';
+          document.body.appendChild(el);
+        }
+        el.textContent = msg; el.style.opacity = '1';
+        clearTimeout(el._t);
+        el._t = setTimeout(() => el.style.opacity = '0', 2500);
+      }
+
+      startNFC();
+
+
+
+      // ── Clock ──
       function getDaySuffix(d) {
         if (d >= 11 && d <= 13) return 'th';
         switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
       }
-
-      function getGreeting() {
-        const h = new Date().getHours();
-        const m = new Date().getMinutes();
-        const totalMins = h * 60 + m;
-        if (totalMins >= 240 && totalMins < 720)  return 'Good Morning';
-        if (totalMins >= 720 && totalMins < 1050) return 'Good Afternoon';
-        return 'Good Evening';
-      }
-
       function updateClock() {
         const now = new Date();
         const dayName = now.toLocaleString('en-GB', { weekday: 'long' });
         const day = now.getDate();
         const month = now.toLocaleString('en-GB', { month: 'long' });
         const time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-        document.getElementById('clock').innerHTML =
-          `${dayName} ${day}${getDaySuffix(day)} ${month}<br>${time}`;
-        document.getElementById('welcome').textContent = getGreeting();
+        document.getElementById('clock').innerHTML = `${dayName} ${day}${getDaySuffix(day)} ${month}<br>${time}`;
       }
-
       setInterval(updateClock, 1000);
       updateClock();
+
+      // ── Weather (Open-Meteo, free, no key needed) ──
+      // Manchester: lat 53.4808, lon -2.2426
+      async function loadWeather() {
+        try {
+          const lat = 53.4808, lon = -2.2426;
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1`;
+          const res = await fetch(url);
+          const data = await res.json();
+
+          const temp = Math.round(data.current.temperature_2m);
+          const code = data.current.weathercode;
+          const sunrise = data.daily.sunrise[0].split('T')[1];
+          const sunset  = data.daily.sunset[0].split('T')[1];
+
+          document.getElementById('weatherTemp').textContent = `${temp}°C`;
+          document.getElementById('weatherIcon').textContent = weatherIcon(code);
+          document.getElementById('weatherSun').innerHTML =
+            `☀️ Rise ${sunrise} &nbsp; 🌙 Set ${sunset}`;
+        } catch (e) {
+          document.getElementById('weatherTemp').textContent = '';
+          document.getElementById('weatherIcon').textContent = '';
+        }
+      }
+
+      function weatherIcon(code) {
+        if (code === 0) return '☀️';
+        if (code <= 2) return '⛅';
+        if (code <= 3) return '☁️';
+        if (code <= 49) return '🌫️';
+        if (code <= 59) return '🌦️';
+        if (code <= 69) return '🌧️';
+        if (code <= 79) return '🌨️';
+        if (code <= 84) return '🌧️';
+        if (code <= 99) return '⛈️';
+        return '🌡️';
+      }
+
+      loadWeather();
+      setInterval(loadWeather, 10 * 60 * 1000); // refresh every 10 mins
+
+      // ── Auto sign out at midnight (non-ShopOn) and 6am (ShopOn) ──
+      function scheduleAutoSignout() {
+        const now = new Date();
+
+        // Midnight signout
+        const midnight = new Date(now);
+        midnight.setHours(24, 0, 10, 0);
+        setTimeout(async () => {
+          await autoSignout(false);
+          scheduleAutoSignout();
+        }, midnight - now);
+
+        // 6am signout for ShopOn
+        const sixAm = new Date(now);
+        sixAm.setHours(6, 0, 10, 0);
+        if (sixAm <= now) sixAm.setDate(sixAm.getDate() + 1);
+        setTimeout(() => autoSignout(true), sixAm - now);
+      }
+
+      async function autoSignout(shopOnOnly) {
+        try {
+          const res = await fetch('/api/visitors');
+          const visitors = await res.json();
+          for (const v of visitors) {
+            const isShopOn = v.project && v.project.toLowerCase().includes('shopon');
+            if (shopOnOnly && !isShopOn) continue;
+            if (!shopOnOnly && isShopOn) continue;
+            await fetch('/api/signout', {
+              method: 'POST', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: v.name })
+            });
+          }
+        } catch (e) {}
+      }
+
+      scheduleAutoSignout();
     </script>
   </body>
 </html>
