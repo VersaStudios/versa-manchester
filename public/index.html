@@ -33,17 +33,17 @@
       #topRight { text-align: right; justify-self: end; }
 
       #clock {
-        font-size: 14px; font-weight: bold;
-        line-height: 1.5; color: #1a1a1a;
+        font-size: 16px; font-weight: bold;
+        line-height: 1.4; color: #1a1a1a;
+        white-space: nowrap;
       }
 
       #weatherBlock {
-        margin-top: 8px; text-align: right;
-        font-size: 14px; color: #444; line-height: 1.6;
+        margin-top: 4px; text-align: right;
       }
-      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 6px; }
+      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; white-space: nowrap; }
       #weatherIcon { font-size: 16px; }
-      #weatherTemp { font-size: 14px; font-weight: bold; }
+      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; }
       #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; }
 
       /* ── Centre: Logo ── */
@@ -56,9 +56,10 @@
       #logoWrap img { width: 100%; display: block; }
 
       #siteLabel {
-        font-size: 28px; font-weight: bold;
-        letter-spacing: 0.18em; color: #888;
-        text-transform: uppercase; margin-top: 14px;
+        font-size: 16px; font-weight: bold;
+        letter-spacing: 0.22em; color: #aaa;
+        text-transform: uppercase; margin-top: 10px;
+        text-align: center;
       }
 
       /* ── Buttons ── */
@@ -184,7 +185,7 @@
         const day = now.getDate();
         const month = now.toLocaleString('en-GB', { month: 'long' });
         const time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-        document.getElementById('clock').innerHTML = `${dayName} ${day}${getDaySuffix(day)} ${month}<br>${time}`;
+        document.getElementById('clock').textContent = dayName + ' ' + day + getDaySuffix(day) + ' ' + month + '  ' + time;
       }
       setInterval(updateClock, 1000);
       updateClock();
@@ -203,10 +204,9 @@
           const sunrise = data.daily.sunrise[0].split('T')[1];
           const sunset  = data.daily.sunset[0].split('T')[1];
 
-          document.getElementById('weatherTemp').textContent = `${temp}°C`;
           document.getElementById('weatherIcon').textContent = weatherIcon(code);
-          document.getElementById('weatherSun').innerHTML =
-            `☀️ Rise ${sunrise} &nbsp; 🌙 Set ${sunset}`;
+          document.getElementById('weatherTemp').textContent = temp + '\u00b0C';
+          document.getElementById('weatherSun').textContent = 'Rise ' + sunrise + '  Set ' + sunset;
         } catch (e) {
           document.getElementById('weatherTemp').textContent = '';
           document.getElementById('weatherIcon').textContent = '';
