@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <style>
       @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
+      #topBar {
+        display: flex; justify-content: space-between; align-items: flex-start;
+        padding: 28px 36px 0; flex-shrink: 0; width: 100%;
+      }
+      #logoArea { display: flex; flex-direction: column; gap: 6px; }
+      #logo { width: 110px; cursor: pointer; }
+      #siteLabel { font-size: 11px; font-weight: bold; letter-spacing: 0.2em; color: #aaa; text-transform: uppercase; }
+      #logo img { width: 100%; display: block; }
+      #topRight { text-align: right; flex-shrink: 0; }
+      #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; white-space: nowrap; text-align: right; }
+      #weatherBlock { margin-top: 4px; text-align: right; }
+      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+      #weatherIcon { font-size: 16px; }
+      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; }
+      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; text-align: right; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
       html, body { height: 100%; overflow: hidden; }
 
@@ -17,36 +32,12 @@
       }
 
       /* ── Top bar ── */
-      #topBar {
-        width: 100%; display: grid;
-        grid-template-columns: 40px 1fr 40px;
-        padding: 28px 40px 0; flex-shrink: 0;
-        align-items: start;
-      }
-
-      #adminBtn {
-        width: 36px; opacity: 0.12; cursor: pointer; transition: opacity 0.3s;
-      }
       #adminBtn:hover { opacity: 1; }
 
       /* Clock + weather block */
-      #topRight { text-align: right; justify-self: end; }
 
       /* ── Centre: Logo ── */
-      #centre {
-        display: flex; flex-direction: column;
-        align-items: center;
-      }
-
-      #logoWrap { width: 380px; overflow: hidden; height: 160px; }
       #logoWrap img { width: 100%; display: block; }
-
-      #siteLabel {
-        font-size: 16px; font-weight: bold;
-        letter-spacing: 0.22em; color: #aaa;
-        text-transform: uppercase; margin-top: 10px;
-        text-align: center;
-      }
 
       /* ── Buttons ── */
       #spacer { flex: 0 0 16px; }
@@ -87,36 +78,26 @@
       /* ── Safe edge padding ── */
       body { padding-left: max(24px, env(safe-area-inset-left));
              padding-right: max(24px, env(safe-area-inset-right)); }
-
-
-      #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; white-space: nowrap; text-align: right; }
-      #weatherBlock { margin-top: 4px; text-align: right; }
-      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
-      #weatherIcon { font-size: 16px; }
-      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; }
-      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; text-align: right; }
     </style>
   </head>
   <body>
 
-    <div id="topBar">
-      <img id="adminBtn" src="List.png" alt="Admin" onclick="window.location.href='monitor.html'">
-      <div id="centre">
-        <div id="logoWrap"><img src="Versa Logo.png" alt="Versa"></div>
+        <div id="topBar">
+      <div id="logoArea">
+        <div id="logo"><img src="Versa Logo.png" alt="Versa"></div>
         <div id="siteLabel">Manchester</div>
       </div>
       <div id="topRight">
         <div id="clock"></div>
         <div id="weatherBlock">
           <div id="weatherLine">
-            <span id="weatherIcon">⛅</span>
-            <span id="weatherTemp">—°C</span>
+            <span id="weatherIcon">&#x26C5;</span>
+            <span id="weatherTemp">&mdash;&deg;C</span>
           </div>
           <div id="weatherSun"></div>
         </div>
       </div>
     </div>
-
 
     <div id="spacer"></div>
     <div id="buttons">
@@ -167,20 +148,12 @@
 
 
       // ── Clock ──
-      function getDaySuffix(d) {
-        if (d >= 11 && d <= 13) return 'th';
-        switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
-      }
-      function updateClock() {
-        const now = new Date();
-        const dayName = now.toLocaleString('en-GB', { weekday: 'long' });
+      });
         const day = now.getDate();
         const month = now.toLocaleString('en-GB', { month: 'long' });
         const time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
         document.getElementById('clock').textContent = dayName + ' ' + day + getDaySuffix(day) + ' ' + month + '  ' + time;
       }
-      setInterval(updateClock, 1000);
-      updateClock();
 
       // ── Weather (Open-Meteo, free, no key needed) ──
       // Manchester: lat 53.4808, lon -2.2426
@@ -257,6 +230,21 @@
       }
 
       scheduleAutoSignout();
+      function getDaySuffix(d) {
+        if (d >= 11 && d <= 13) return 'th';
+        switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
+      }
+      function updateClock() {
+        var now = new Date();
+        var dayName = now.toLocaleString('en-GB', { weekday: 'long' });
+        var day = now.getDate();
+        var month = now.toLocaleString('en-GB', { month: 'long' });
+        var time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+        var el = document.getElementById('clock');
+        if (el) el.innerHTML = dayName + ' ' + day + getDaySuffix(day) + ' ' + month + '<br>' + time;
+      }
+      setInterval(updateClock, 1000);
+      updateClock();
     </script>
   </body>
 </html>

@@ -6,6 +6,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
       @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
+      #topBar {
+        display: flex; justify-content: space-between; align-items: flex-start;
+        padding: 28px 36px 0; flex-shrink: 0; width: 100%;
+      }
+      #logo { width: 110px; cursor: pointer; }
+      #logo img { width: 100%; display: block; }
+      #topRight { text-align: right; flex-shrink: 0; }
+      #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; white-space: nowrap; text-align: right; }
+      #weatherBlock { margin-top: 4px; text-align: right; }
+      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+      #weatherIcon { font-size: 16px; }
+      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; }
+      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; text-align: right; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
 
       body {
@@ -16,14 +29,6 @@
         padding-left: max(24px, env(safe-area-inset-left));
         padding-right: max(24px, env(safe-area-inset-right));
       }
-
-      #topBar {
-        display: flex; justify-content: space-between; align-items: center;
-        padding: 24px 36px 0; flex-shrink: 0; width: 100%;
-      }
-      #logo { width: 110px; cursor: pointer; }
-      #logo img { width: 100%; display: block; }
-      #topRight { text-align: right; }
 
       #heading { padding: 20px 36px 0; flex-shrink: 0; width: 100%; text-align: center; }
       #heading h1 {
@@ -117,12 +122,6 @@
         opacity: 0.10; pointer-events: none;
       }
       body > * { position: relative; z-index: 1; }
-      #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; white-space: nowrap; text-align: right; }
-      #weatherBlock { margin-top: 4px; text-align: right; }
-      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
-      #weatherIcon { font-size: 16px; }
-      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; }
-      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; text-align: right; }
     </style>
   </head>
   <body>
@@ -393,7 +392,6 @@
       loadWeather();
       setInterval(loadWeather, 600000);
 
-      // ── Clock ──
       function getDaySuffix(d) {
         if (d >= 11 && d <= 13) return 'th';
         switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }

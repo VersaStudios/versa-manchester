@@ -6,6 +6,19 @@
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
       @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
+      #topBar {
+        display: flex; justify-content: space-between; align-items: flex-start;
+        padding: 28px 36px 0; flex-shrink: 0; width: 100%;
+      }
+      #logo { width: 110px; cursor: pointer; }
+      #logo img { width: 100%; display: block; }
+      #topRight { text-align: right; flex-shrink: 0; }
+      #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; white-space: nowrap; text-align: right; }
+      #weatherBlock { margin-top: 4px; text-align: right; }
+      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+      #weatherIcon { font-size: 16px; }
+      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; }
+      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; text-align: right; }
       * { box-sizing: border-box; margin: 0; padding: 0; }
 
       body {
@@ -19,8 +32,6 @@
 
       #logoWrap { width: 100px; }
       #logoWrap img { width: 100%; display: block; }
-      #p45TopBar { display: flex; justify-content: space-between; align-items: flex-start; width: 100%; flex-shrink: 0; }
-      #topRight { text-align: right; }
 
 
       #message {
@@ -79,17 +90,11 @@
         pointer-events: none;
       }
       body > * { position: relative; z-index: 1; }
-      #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; white-space: nowrap; text-align: right; }
-      #weatherBlock { margin-top: 4px; text-align: right; }
-      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
-      #weatherIcon { font-size: 16px; }
-      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; }
-      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; text-align: right; }
     </style>
   </head>
   <body>
-    <div id="p45TopBar">
-      <div id="logoWrap"><img src="Versa Logo.png" alt="Versa"></div>
+    <div id="topBar">
+      <div id="logo"><img src="Versa Logo.png" alt="Versa"></div>
       <div id="topRight">
         <div id="clock"></div>
         <div id="weatherBlock">
@@ -176,16 +181,16 @@
         switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
       }
       function updateClock() {
-        const now = new Date();
-        const dayName = now.toLocaleString('en-GB', { weekday: 'long' });
-        const day = now.getDate();
-        const month = now.toLocaleString('en-GB', { month: 'long' });
-        const time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-        const el = document.getElementById('clock');
+        var now = new Date();
+        var dayName = now.toLocaleString('en-GB', { weekday: 'long' });
+        var day = now.getDate();
+        var month = now.toLocaleString('en-GB', { month: 'long' });
+        var time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+        var el = document.getElementById('clock');
         if (el) el.innerHTML = dayName + ' ' + day + getDaySuffix(day) + ' ' + month + '<br>' + time;
       }
-      setInterval(updateClock, 1000); updateClock();
-      function goHome() { clearInterval(t); window.location.href = 'index.html'; }
+      setInterval(updateClock, 1000);
+      updateClock();
     </script>
   </body>
 </html>
