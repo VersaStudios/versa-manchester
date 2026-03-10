@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Manage — Versa</title>
+    <style>
+      @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+
+      body {
+        background: #ffffff; margin: 0;
+        display: flex; flex-direction: column; align-items: center;
+        padding: 0;
+        font-family: 'Brother1816', Arial, sans-serif; min-height: 100vh;
+      }
+
+      /* ── Gate mode ── */
+      body.gate-mode {
+        background: #ffffff !important;
+        padding: 0 !important;
+        justify-content: flex-start;
+        min-height: 100vh;
+      }
+
+      /* ── Access gate ── */
+      #access-box { display: flex; flex-direction: column; width: 100%; max-width: 600px;
+        padding: 28px 36px 40px; min-height: 100vh; }
+      #gateTopBar  { display: flex; justify-content: space-between; align-items: center; }
+      #gateLogo    { width: 110px; }
+      #gateLogo img { width: 100%; display: block; }
+
+      #gateHeading {
+        font-size: 5vw; font-weight: 900;
+        text-transform: uppercase; color: #1a1a1a;
+        line-height: 1; letter-spacing: -0.01em;
+        margin: 24px 0 40px;
+      }
+
+      #keypadDisplay {
+        width: 100%; padding: 18px 20px; border-radius: 14px;
+        border: 2px solid #1a1a1a; font-size: 40px; font-family: inherit;
+        background: white; color: #1a1a1a; text-align: center;
+        letter-spacing: 0.4em; min-height: 72px; margin-bottom: 16px;
+      }
+      #keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      .kp-btn {
+        padding: 22px 0; font-size: 28px; font-weight: bold;
+        border-radius: 14px; cursor: pointer; border: 2px solid #1a1a1a;
+        background: white; color: #1a1a1a; font-family: inherit;
+        -webkit-tap-highlight-color: transparent;
+        transition: background 0.1s, color 0.1s;
+      }
+      .kp-btn:active { background: #1a1a1a; color: white; }
+      .kp-btn.enter-btn { background: #1a1a1a; color: white; font-size: 18px; letter-spacing: 0.06em; }
+      .kp-btn.enter-btn:active { background: #444; }
+      #codeError { color: #1a1a1a; margin-top: 12px; font-size: 16px; font-weight: bold; min-height: 1.2em; }
+
+      /* ── Main panel ── */
+      #logo { width: 140px; margin-bottom: 20px; cursor: pointer; display: none; }
+      #managePanel { display: none; width: 100%; max-width: 760px; }
+
+      h2.section-title {
+        font-size: 20px; margin: 28px 0 12px;
+        display: flex; align-items: center; justify-content: space-between;
+      }
+
+      /* ── Notice section ── */
+      .notice-wrap {
+        background: white; border-radius: 14px; padding: 18px 20px;
+        box-shadow: 0 0 8px rgba(0,0,0,0.08); margin-bottom: 8px;
+      }
+      .notice-wrap input {
+        width: 100%; padding: 14px 16px; border-radius: 10px;
+        border: 2px solid #1a1a1a; font-size: 16px;
+        font-family: inherit; outline: none;
+      }
+      .notice-wrap input:focus { border-color: #555; }
+      .notice-btns { display: flex; gap: 10px; margin-top: 10px; }
+      .add-btn {
+        padding: 12px 20px; border-radius: 10px; cursor: pointer;
+        border: none; background: #1a1a1a; color: white;
+        font-family: inherit; font-size: 15px; font-weight: bold;
+        letter-spacing: 0.03em; transition: opacity 0.15s;
+      }
+      .add-btn:hover { opacity: 0.8; }
+      .add-btn.grey { background: #888; }
+      #noticeStatus { font-size: 13px; color: #888; margin-top: 8px; min-height: 1.2em; }
+
+      /* ── Add project row ── */
+      .add-row {
+        display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+      }
+      .add-row input {
+        flex: 1; padding: 12px 16px; border-radius: 10px;
+        border: 1.5px solid #ccc; font-size: 15px; font-family: inherit;
+        min-width: 180px; outline: none;
+      }
+      .add-row input:focus { border-color: #1a1a1a; }
+      .add-row button {
+        padding: 12px 20px; border-radius: 10px; cursor: pointer; border: none;
+        background: #1a1a1a; color: white; font-family: inherit; font-size: 15px;
+        white-space: nowrap;
+      }
+
+      /* ── Project cards ── */
+      .project-card {
+        background: white; border-radius: 14px;
+        box-shadow: 0 0 8px rgba(0,0,0,0.1); margin-bottom: 18px; overflow: hidden;
+      }
+      .suspended-card { opacity: 0.55; }
+      .suspended-card .project-header { background: #888 !important; }
+
+      .project-header {
+        background: #1a1a1a; color: white; padding: 16px 20px;
+        cursor: pointer; display: flex; justify-content: space-between;
+        align-items: center; user-select: none;
+      }
+      .project-header h3 { font-size: 17px; margin: 0; }
+      .project-header .meta { font-size: 13px; color: rgba(255,255,255,0.6); margin-top: 3px; }
+      .chevron { font-size: 14px; transition: transform 0.2s; flex-shrink: 0; }
+      .project-card.open .chevron { transform: rotate(180deg); }
+
+      .project-body { display: none; }
+      .project-card.open .project-body { display: block; }
+
+      /* ── Person row ── */
+      .person-row {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 12px 20px; border-bottom: 1px solid #f0f0f0;
+      }
+      .person-row:last-of-type { border-bottom: none; }
+      .person-name  { font-size: 15px; font-weight: bold; }
+      .person-title { font-size: 13px; color: #888; margin-top: 2px; }
+
+      .delete-btn {
+        background: #D9534F; color: white; border: none; border-radius: 6px;
+        padding: 6px 12px; cursor: pointer; font-family: inherit; font-size: 13px;
+        flex-shrink: 0;
+      }
+      .delete-btn:hover { background: #c0392b; }
+
+      .nfc-btn {
+        background: #2e2e2e; color: white; border: none;
+        border-radius: 6px; padding: 6px 12px; cursor: pointer;
+        font-family: inherit; font-size: 12px; margin-right: 6px;
+      }
+      .nfc-btn.assigned { background: #4CAF50; }
+      .nfc-btn:hover { opacity: 0.85; }
+
+      .suspend-btn {
+        background: #f0a500; color: white; border: none;
+        border-radius: 6px; padding: 4px 12px; cursor: pointer;
+        font-family: inherit; font-size: 13px; margin-right: 6px;
+      }
+      .suspend-btn.suspended { background: #4CAF50; }
+      .suspend-btn:hover { opacity: 0.85; }
+
+      .del-project-btn {
+        background: transparent; border: 1px solid rgba(255,255,255,0.4);
+        color: white; border-radius: 6px; padding: 4px 12px;
+        cursor: pointer; font-family: inherit; font-size: 13px;
+      }
+      .del-project-btn:hover { background: rgba(255,255,255,0.15); }
+
+      /* ── Add person form (inline per project) ── */
+      .add-person-section {
+        border-top: 2px dashed #e8e8e8;
+        padding: 16px 20px 20px;
+        background: #fafafa;
+      }
+      .add-person-section .section-label {
+        font-size: 12px; color: #aaa; font-weight: bold;
+        letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 12px;
+      }
+      .add-person-row {
+        display: flex; gap: 10px; flex-wrap: wrap;
+      }
+      .add-person-row input {
+        flex: 1; min-width: 140px; padding: 10px 14px;
+        border-radius: 10px; border: 1.5px solid #ddd;
+        font-size: 14px; font-family: inherit; outline: none;
+        background: white;
+      }
+      .add-person-row input:focus { border-color: #1a1a1a; }
+      .add-person-btn {
+        padding: 10px 18px; border-radius: 10px; cursor: pointer;
+        border: none; background: #1a1a1a; color: white;
+        font-family: inherit; font-size: 14px; white-space: nowrap;
+        align-self: flex-end;
+      }
+      .add-person-status {
+        font-size: 13px; margin-top: 8px; min-height: 1.2em;
+      }
+
+      .empty-msg { padding: 16px 20px; color: #aaa; font-size: 14px; }
+
+      #globalStatus { margin-top: 12px; font-size: 14px; color: #c00; min-height: 1.2em; text-align: center; }
+
+      /* ── NFC Modal ── */
+      #nfcModal {
+        display: none; position: fixed; inset: 0;
+        background: rgba(0,0,0,0.5); z-index: 100;
+        align-items: center; justify-content: center;
+      }
+      #nfcModal.open { display: flex; }
+      #nfcModalBox {
+        background: white; border-radius: 20px; padding: 36px 40px;
+        text-align: center; width: 320px; box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      }
+      #nfcModalBox h3 { font-size: 20px; margin-bottom: 10px; }
+      #nfcModalBox p  { font-size: 14px; color: #888; margin-bottom: 24px; }
+      .nfc-icon { font-size: 56px; margin-bottom: 16px; }
+      #nfcModalStatus { font-size: 15px; color: #4CAF50; min-height: 1.4em; margin-bottom: 16px; font-weight: bold; }
+      #nfcModalCancel {
+        padding: 12px 28px; font-size: 16px; border-radius: 10px;
+        cursor: pointer; border: 1.5px solid #d0d0d0; background: white;
+        font-family: inherit; color: #1a1a1a;
+      }
+
+      /* ── Safe edge padding ── */
+      body { padding-left: max(24px, env(safe-area-inset-left));
+             padding-right: max(24px, env(safe-area-inset-right)); }
+
+      /* ── Background image ── */
+      body::before {
+        content: '';
+        position: fixed; inset: 0; z-index: 0;
+        background-image: url('studio-bw.jpg');
+        background-size: cover; background-position: center;
+        opacity: 0.10; pointer-events: none;
+      }
+      body > * { position: relative; z-index: 1; }
+    </style>
+  </head>
+  <body>
+
+    <!-- Access gate -->
+    <div id="access-box">
+      <div id="gateTopBar">
+        <div id="gateLogo"><img src="Versa Logo.png" alt="Versa"></div>
+      </div>
+      <div id="gateHeading">Manage.</div>
+      <div id="keypadDisplay"></div>
+      <div id="keypad">
+        <button class="kp-btn" onclick="kpPress('1')">1</button>
+        <button class="kp-btn" onclick="kpPress('2')">2</button>
+        <button class="kp-btn" onclick="kpPress('3')">3</button>
+        <button class="kp-btn" onclick="kpPress('4')">4</button>
+        <button class="kp-btn" onclick="kpPress('5')">5</button>
+        <button class="kp-btn" onclick="kpPress('6')">6</button>
+        <button class="kp-btn" onclick="kpPress('7')">7</button>
+        <button class="kp-btn" onclick="kpPress('8')">8</button>
+        <button class="kp-btn" onclick="kpPress('9')">9</button>
+        <button class="kp-btn" onclick="kpDelete()">⌫</button>
+        <button class="kp-btn" onclick="kpPress('0')">0</button>
+        <button class="kp-btn enter-btn" onclick="checkCode()">Enter</button>
+      </div>
+      <div id="codeError"></div>
+    </div>
+
+    <!-- Logo shown after unlock -->
+    <img id="logo" src="Versa Logo.png" alt="Versa">
+
+    <!-- Manage panel -->
+    <div id="managePanel">
+
+      <!-- Notice section -->
+      <h2 class="section-title">Home Screen Notice</h2>
+      <div class="notice-wrap">
+        <input id="noticeInput" type="text"
+               placeholder="e.g. Fire Test at 3pm — auto-clears at midnight"
+               autocomplete="off" maxlength="120">
+        <div class="notice-btns">
+          <button class="add-btn" onclick="saveNotice()" style="flex:1">Save Notice</button>
+          <button class="add-btn grey" onclick="clearNotice()">Clear</button>
+        </div>
+        <div id="noticeStatus"></div>
+      </div>
+
+      <!-- Projects & People -->
+      <h2 class="section-title" style="margin-top:28px">
+        Projects &amp; People
+        <span style="font-size:14px;color:#888;font-weight:normal">Click to expand</span>
+      </h2>
+
+      <div class="add-row">
+        <input id="newProjectName" type="text" placeholder="New project name…" autocomplete="off">
+        <button onclick="addProject()">+ Add Project</button>
+      </div>
+
+      <div id="projectList"></div>
+      <div id="globalStatus"></div>
+    </div>
+
+    <!-- NFC Modal -->
+    <div id="nfcModal">
+      <div id="nfcModalBox">
+        <div class="nfc-icon">📡</div>
+        <h3 id="nfcModalTitle">Assign Card</h3>
+        <p>Tap the NFC card on the iPad now</p>
+        <div id="nfcModalStatus">Waiting for card…</div>
+        <button id="nfcModalCancel" onclick="closeNfcModal()">Cancel</button>
+      </div>
+    </div>
+
+    <script>
+      const ACCESS_CODE = '1234';
+      let peopleData = null;
+
+      let kpValue = '';
+      function kpPress(digit) {
+        if (kpValue.length >= 6) return;
+        kpValue += digit;
+        document.getElementById('keypadDisplay').textContent = '•'.repeat(kpValue.length);
+        document.getElementById('codeError').textContent = '';
+        if (kpValue.length === ACCESS_CODE.length) setTimeout(checkCode, 200);
+      }
+      function kpDelete() {
+        kpValue = kpValue.slice(0, -1);
+        document.getElementById('keypadDisplay').textContent = '•'.repeat(kpValue.length);
+      }
+
+      function checkCode() {
+        if (kpValue === ACCESS_CODE) {
+          document.getElementById('access-box').style.display = 'none';
+          document.getElementById('logo').style.display = 'block';
+          document.getElementById('managePanel').style.display = 'block';
+          document.body.style.background = '#f0f0f0';
+          document.body.style.padding = '40px 20px 60px';
+          loadPeople();
+          loadNotice();
+        } else {
+          document.getElementById('codeError').textContent = 'Incorrect code.';
+          kpValue = '';
+          document.getElementById('keypadDisplay').textContent = '';
+        }
+      }
+
+      // ── Load & render ──
+      async function loadPeople() {
+        try {
+          const res = await fetch('/api/people');
+          peopleData = await res.json();
+          renderProjects();
+        } catch (e) { setStatus('Could not load data.'); }
+      }
+
+      function renderProjects() {
+        const container = document.getElementById('projectList');
+        // Remember which cards are open
+        const openIds = new Set(
+          [...document.querySelectorAll('.project-card.open')].map(c => c.dataset.projId)
+        );
+        container.innerHTML = '';
+        if (!peopleData || !peopleData.projects.length) {
+          container.innerHTML = '<p style="color:#aaa;padding:12px 0">No projects yet.</p>';
+          return;
+        }
+        peopleData.projects.forEach(proj => {
+          const card = buildProjectCard(proj);
+          if (openIds.has(proj.id)) card.classList.add('open');
+          container.appendChild(card);
+        });
+      }
+
+      function buildProjectCard(proj) {
+        const card = document.createElement('div');
+        card.className = 'project-card' + (proj.suspended ? ' suspended-card' : '');
+        card.id = `proj-${proj.id}`;
+        card.dataset.projId = proj.id;
+
+        const count = proj.people.length;
+        const isVisitor = proj.visitorProject;
+
+        // People rows HTML
+        const peopleHTML = proj.people.length === 0
+          ? `<div class="empty-msg">No people in this project yet.</div>`
+          : proj.people.map(p => `
+              <div class="person-row" id="person-${p.id}">
+                <div>
+                  <div class="person-name">${escHtml(p.name)}</div>
+                  <div class="person-title">${escHtml(p.jobTitle || p.company || '—')}</div>
+                </div>
+                <div style="display:flex;align-items:center;gap:6px;flex-shrink:0">
+                  <button class="nfc-btn ${p.nfcId ? 'assigned' : ''}"
+                    onclick="startAssignCard('${p.id}','${escHtml(p.name)}')"
+                    title="${p.nfcId ? 'Card assigned — click to reassign' : 'Assign NFC card'}">
+                    ${p.nfcId ? '✓ Card' : '+ Card'}
+                  </button>
+                  ${p.nfcId ? `<button class="nfc-btn" style="background:#e0e0e0;color:#555"
+                    onclick="removeCard('${p.id}','${escHtml(p.name)}')">✕</button>` : ''}
+                  <button class="delete-btn" onclick="deletePerson('${p.id}','${escHtml(p.name)}')">Delete</button>
+                </div>
+              </div>`).join('');
+
+        // Add person form — fields differ for visitor vs regular
+        const addPersonForm = isVisitor ? `
+          <div class="add-person-section">
+            <div class="section-label">+ Add Visitor</div>
+            <div class="add-person-row">
+              <input type="text" placeholder="Full name" id="newName-${proj.id}"
+                     autocomplete="off" autocapitalize="words" inputmode="text">
+              <input type="text" placeholder="Company" id="newCompany-${proj.id}"
+                     autocomplete="off" inputmode="text">
+              <button class="add-person-btn" onclick="addPerson('${proj.id}', true)">Add</button>
+            </div>
+            <div class="add-person-status" id="addStatus-${proj.id}"></div>
+          </div>` : `
+          <div class="add-person-section">
+            <div class="section-label">+ Add Person</div>
+            <div class="add-person-row">
+              <input type="text" placeholder="Full name" id="newName-${proj.id}"
+                     autocomplete="off" autocapitalize="words" inputmode="text">
+              <input type="text" placeholder="Job title" id="newJob-${proj.id}"
+                     autocomplete="off" inputmode="text">
+              <button class="add-person-btn" onclick="addPerson('${proj.id}', false)">Add</button>
+            </div>
+            <div class="add-person-status" id="addStatus-${proj.id}"></div>
+          </div>`;
+
+        card.innerHTML = `
+          <div class="project-header" onclick="toggleCard('${proj.id}')">
+            <div>
+              <h3>${escHtml(proj.name)}${proj.suspended ? ' <span style="font-size:12px;opacity:0.7">(Suspended)</span>' : ''}</h3>
+              <div class="meta">${count} ${count === 1 ? 'person' : 'people'}</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <button class="suspend-btn ${proj.suspended ? 'suspended' : ''}"
+                onclick="toggleSuspend(event,'${proj.id}')">
+                ${proj.suspended ? '▶ Restore' : '⏸ Suspend'}
+              </button>
+              <button class="del-project-btn"
+                onclick="deleteProject(event,'${proj.id}','${escHtml(proj.name)}')">Delete</button>
+              <span class="chevron">▼</span>
+            </div>
+          </div>
+          <div class="project-body" id="body-${proj.id}">
+            ${peopleHTML}
+            ${addPersonForm}
+          </div>`;
+
+        return card;
+      }
+
+      function toggleCard(projectId) {
+        document.getElementById(`proj-${projectId}`).classList.toggle('open');
+      }
+
+      // ── Add person ──
+      async function addPerson(projectId, isVisitor) {
+        const nameEl   = document.getElementById(`newName-${projectId}`);
+        const jobEl    = document.getElementById(`newJob-${projectId}`);
+        const companyEl = document.getElementById(`newCompany-${projectId}`);
+        const statusEl = document.getElementById(`addStatus-${projectId}`);
+
+        const name     = nameEl.value.trim();
+        const jobTitle = jobEl ? jobEl.value.trim() : '';
+        const company  = companyEl ? companyEl.value.trim() : '';
+
+        if (!name) { statusEl.textContent = 'Please enter a name.'; statusEl.style.color = '#c00'; return; }
+
+        try {
+          const res = await fetch('/api/people', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name, jobTitle, company, projectId })
+          });
+          const data = await res.json();
+          if (res.status === 409) { statusEl.textContent = 'That name already exists.'; statusEl.style.color = '#c00'; return; }
+          if (!res.ok) { statusEl.textContent = data.error || 'Could not add person.'; statusEl.style.color = '#c00'; return; }
+
+          // Clear inputs
+          nameEl.value = '';
+          if (jobEl) jobEl.value = '';
+          if (companyEl) companyEl.value = '';
+          statusEl.textContent = `✓ ${name} added`;
+          statusEl.style.color = '#4CAF50';
+          setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 2500);
+          await loadPeople();
+        } catch (e) { statusEl.textContent = 'Could not reach server.'; statusEl.style.color = '#c00'; }
+      }
+
+      // ── Add project ──
+      async function addProject() {
+        const nameInput = document.getElementById('newProjectName');
+        const name = nameInput.value.trim();
+        if (!name) { setStatus('Enter a project name.'); return; }
+        try {
+          const res = await fetch('/api/projects', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+          });
+          const data = await res.json();
+          if (res.status === 409) { setStatus('That project already exists.'); return; }
+          if (!res.ok) { setStatus(data.error || 'Could not add project.'); return; }
+          nameInput.value = ''; setStatus('');
+          await loadPeople();
+        } catch (e) { setStatus('Could not reach server.'); }
+      }
+      document.getElementById('newProjectName').addEventListener('keydown', e => {
+        if (e.key === 'Enter') addProject();
+      });
+
+      // ── Delete project ──
+      async function deleteProject(event, projectId, projectName) {
+        event.stopPropagation();
+        const proj = peopleData.projects.find(p => p.id === projectId);
+        const count = proj ? proj.people.length : 0;
+        const msg = count > 0
+          ? `Delete "${projectName}" and all ${count} people in it? This cannot be undone.`
+          : `Delete project "${projectName}"?`;
+        if (!confirm(msg)) return;
+        try {
+          const res = await fetch(`/api/projects/${projectId}`, { method: 'DELETE' });
+          if (!res.ok) { setStatus('Could not delete project.'); return; }
+          setStatus(''); await loadPeople();
+        } catch (e) { setStatus('Could not reach server.'); }
+      }
+
+      // ── Delete person ──
+      async function deletePerson(personId, personName) {
+        if (!confirm(`Remove ${personName} from the database?`)) return;
+        try {
+          const res = await fetch(`/api/people/${personId}`, { method: 'DELETE' });
+          if (!res.ok) { setStatus('Could not delete person.'); return; }
+          setStatus(''); await loadPeople();
+        } catch (e) { setStatus('Could not reach server.'); }
+      }
+
+      // ── Suspend project ──
+      async function toggleSuspend(e, projectId) {
+        e.stopPropagation();
+        try {
+          await fetch(`/api/projects/${projectId}/suspend`, { method: 'PUT' });
+          loadPeople();
+        } catch (e) { setStatus('Could not update project.'); }
+      }
+
+      // ── Notice ──
+      async function loadNotice() {
+        try {
+          const res = await fetch('/api/notice');
+          const data = await res.json();
+          document.getElementById('noticeInput').value = data.text || '';
+        } catch (e) {}
+      }
+
+      async function saveNotice() {
+        const text = document.getElementById('noticeInput').value.trim();
+        const status = document.getElementById('noticeStatus');
+        try {
+          await fetch('/api/notice', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text })
+          });
+          status.textContent = text ? '✓ Notice saved and live on home screen' : '✓ Notice cleared';
+          status.style.color = '#4CAF50';
+          setTimeout(() => status.textContent = '', 3000);
+        } catch (e) {
+          status.textContent = 'Could not save notice.';
+          status.style.color = '#c00';
+        }
+      }
+
+      async function clearNotice() {
+        document.getElementById('noticeInput').value = '';
+        await saveNotice();
+      }
+
+      // ── NFC card assignment ──
+      let assigningPersonId = null, nfcReader = null;
+
+      async function startAssignCard(personId, personName) {
+        if (!('NDEFReader' in window)) {
+          alert('NFC is not supported on this device/browser. Use Safari on iPad.');
+          return;
+        }
+        assigningPersonId = personId;
+        document.getElementById('nfcModalTitle').textContent = `Assign card to ${personName}`;
+        document.getElementById('nfcModalStatus').textContent = 'Waiting for card…';
+        document.getElementById('nfcModalStatus').style.color = '#888';
+        document.getElementById('nfcModal').classList.add('open');
+        try {
+          nfcReader = new NDEFReader();
+          await nfcReader.scan();
+          nfcReader.onreading = async (event) => {
+            const nfcId = event.serialNumber;
+            if (!nfcId || !assigningPersonId) return;
+            const res = await fetch(`/api/people/${assigningPersonId}/nfc`, {
+              method: 'PUT', headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ nfcId })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+              document.getElementById('nfcModalStatus').textContent = data.error || 'Error assigning card.';
+              document.getElementById('nfcModalStatus').style.color = '#c00';
+              return;
+            }
+            document.getElementById('nfcModalStatus').textContent = 'Card assigned!';
+            document.getElementById('nfcModalStatus').style.color = '#4CAF50';
+            setTimeout(() => { closeNfcModal(); loadPeople(); }, 1000);
+          };
+        } catch (e) {
+          document.getElementById('nfcModalStatus').textContent = 'Could not start NFC scan.';
+          document.getElementById('nfcModalStatus').style.color = '#c00';
+        }
+      }
+
+      async function removeCard(personId, personName) {
+        if (!confirm(`Remove NFC card from ${personName}?`)) return;
+        await fetch(`/api/people/${personId}/nfc`, { method: 'DELETE' });
+        loadPeople();
+      }
+
+      function closeNfcModal() {
+        document.getElementById('nfcModal').classList.remove('open');
+        assigningPersonId = null; nfcReader = null;
+      }
+
+      function setStatus(msg) { document.getElementById('globalStatus').textContent = msg; }
+
+      function escHtml(str) {
+        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+      }
+
+      document.getElementById('logo').onclick = () => window.location.href = 'index.html';
+    </script>
+  </body>
+</html>

@@ -32,20 +32,6 @@
       /* Clock + weather block */
       #topRight { text-align: right; justify-self: end; }
 
-      #clock {
-        font-size: 16px; font-weight: bold;
-        line-height: 1.4; color: #1a1a1a;
-        white-space: nowrap;
-      }
-
-      #weatherBlock {
-        margin-top: 4px; text-align: right;
-      }
-      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; white-space: nowrap; }
-      #weatherIcon { font-size: 16px; }
-      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; }
-      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; }
-
       /* ── Centre: Logo ── */
       #centre {
         display: flex; flex-direction: column;
@@ -103,6 +89,12 @@
              padding-right: max(24px, env(safe-area-inset-right)); }
 
 
+      #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; white-space: nowrap; text-align: right; }
+      #weatherBlock { margin-top: 4px; text-align: right; }
+      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+      #weatherIcon { font-size: 16px; }
+      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; }
+      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; text-align: right; }
     </style>
   </head>
   <body>
