@@ -3,7 +3,8 @@
   <head>
     <title>Goodbye — Versa</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <style>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
       @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
       * { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -12,7 +13,7 @@
         display: flex; flex-direction: column;
         align-items: center; justify-content: space-between;
         height: 100vh; overflow: hidden;
-        font-family: 'Brother1816', Arial, sans-serif;
+        font-family: 'Bebas Neue', 'Brother1816', Arial, sans-serif;
         padding: 36px 24px 32px;
       }
 
@@ -37,18 +38,18 @@
       #farewell {
         font-size: 6vw; font-weight: 900;
         text-transform: uppercase; color: #1a1a1a;
-        line-height: 0.85; letter-spacing: -0.01em; width: 100%;
+        line-height: 1.05; letter-spacing: 0.02em; width: 100%;
       }
 
       #nameText {
-        font-size: 36px; font-weight: 900;
+        font-size: 8vw; font-weight: 900;
         text-transform: uppercase; color: #1a1a1a;
-        line-height: 0.9; letter-spacing: -0.01em;
+        line-height: 1.05; letter-spacing: 0.02em;
         width: 100%; word-break: break-word;
       }
 
       #subText {
-        font-size: 16px; font-weight: bold;
+        font-size: 2.8vw; font-weight: bold;
         text-transform: uppercase; color: #ccc;
         letter-spacing: 0.1em; margin-top: 14px;
       }
@@ -132,8 +133,8 @@
 
       // Scale down for long names
       const nameEl = document.getElementById('nameText');
-      if (name.length > 10) nameEl.style.fontSize = '32px';
-      if (name.length > 16) nameEl.style.fontSize = '26px';
+      if (name.length > 10) nameEl.style.fontSize = '6.5vw';
+      if (name.length > 16) nameEl.style.fontSize = '6.5vw';
 
       // ── Timer (3s auto close + red bar) ──
       let timeLeft = 3;
@@ -148,7 +149,7 @@
 
       async function loadWeather() {
         try {
-          const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1';
+          const url = 'https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1';
           const res = await fetch(url);
           const data = await res.json();
           const temp = Math.round(data.current.temperature_2m);
