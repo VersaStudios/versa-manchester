@@ -3,16 +3,18 @@
   <head>
     <title>Sign In — Versa</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <style>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
       @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
       * { box-sizing: border-box; margin: 0; padding: 0; }
 
       body {
         background: #ffffff;
-        display: flex; flex-direction: column;
-        align-items: center;
+        display: flex; flex-direction: column; align-items: center;
         height: 100vh; overflow: hidden;
-        font-family: 'Brother1816', Arial, sans-serif;
+        font-family: 'Bebas Neue', 'Brother1816', Arial, sans-serif;
+        padding-left: max(24px, env(safe-area-inset-left));
+        padding-right: max(24px, env(safe-area-inset-right));
       }
 
       #topBar {
@@ -33,16 +35,16 @@
       #heading h1 {
         font-size: 11vw; font-weight: 900;
         text-transform: uppercase; color: #1a1a1a;
-        line-height: 0.85; letter-spacing: -0.01em;
+        line-height: 1.0; letter-spacing: 0.02em;
       }
 
       #searchArea {
         flex: 1; padding: 28px 36px 24px;
         display: flex; flex-direction: column; gap: 12px;
-        overflow: hidden; width: 100%; max-width: 560px;
+        overflow-y: auto; width: 100%; max-width: 560px;
       }
 
-      #searchWrap { position: relative; }
+      #searchWrap { position: relative; flex-shrink: 0; }
 
       input[type="text"] {
         width: 100%; padding: 18px 20px;
@@ -58,49 +60,44 @@
         background: white; border: 2px solid #1a1a1a; border-top: none;
         border-radius: 0 0 14px 14px; z-index: 10;
         max-height: 260px; overflow-y: auto;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12); text-align: left;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
       }
       .result-item {
-        padding: 16px 20px; cursor: pointer;
+        padding: 18px 20px; cursor: pointer;
         border-bottom: 1px solid #f0f0f0;
         -webkit-tap-highlight-color: transparent;
       }
       .result-item:last-child { border-bottom: none; }
       .result-item:active { background: #f5f5f5; }
-      .result-name { font-size: 20px; font-weight: bold; color: #1a1a1a; }
-      .result-meta { font-size: 14px; color: #888; margin-top: 3px; }
+      .result-name { font-size: 20px; font-weight: bold; color: #1a1a1a; line-height: 1.3; letter-spacing: 0.02em; }
+      .result-meta { font-size: 14px; color: #888; margin-top: 5px; line-height: 1.3; letter-spacing: 0.01em; }
 
-      /* ── Project picker ── */
-      #projectPicker {
-        display: none; flex-direction: column; gap: 10px; flex-shrink: 0;
-      }
+      /* Project picker */
+      #projectPicker { display: none; flex-direction: column; gap: 10px; flex-shrink: 0; }
       #projectPicker.visible { display: flex; }
-      #projectPickerLabel {
-        font-size: 13px; color: #888; padding-left: 4px;
-      }
+      #projectPickerLabel { font-size: 14px; color: #888; padding-left: 4px; }
+
       .proj-btn {
-        padding: 16px 20px; font-size: 18px; font-weight: bold;
+        width: 100%; padding: 16px 20px; font-size: 18px; font-weight: bold;
         border-radius: 14px; cursor: pointer; text-align: left;
         border: 2px solid #1a1a1a; background: white; color: #1a1a1a;
-        font-family: inherit; letter-spacing: 0.02em;
-        -webkit-tap-highlight-color: transparent;
+        font-family: inherit; -webkit-tap-highlight-color: transparent;
         transition: background 0.1s, color 0.1s;
       }
       .proj-btn:active { background: #1a1a1a; color: white; }
-      .proj-btn .proj-meta { font-size: 13px; color: #888; font-weight: normal; margin-top: 2px; }
-      .proj-btn:active .proj-meta { color: rgba(255,255,255,0.7); }
+      .proj-meta { font-size: 13px; color: #888; font-weight: normal; margin-top: 3px; }
+      .proj-btn:active .proj-meta { color: rgba(255,255,255,0.6); }
 
-      /* ── Details form (shown after project picked) ── */
-      #newPersonForm {
-        display: none; flex-direction: column; gap: 10px; flex-shrink: 0;
-      }
+      /* Details form */
+      #newPersonForm { display: none; flex-direction: column; gap: 10px; flex-shrink: 0; }
       #newPersonForm.visible { display: flex; }
-      #newPersonForm input { font-size: 18px; padding: 14px 18px; }
+      #selectedProjectBadge { font-size: 13px; color: #888; padding-left: 4px; }
       #newPersonForm label { font-size: 13px; color: #888; padding-left: 4px; }
+      #newPersonForm input { font-size: 18px; padding: 14px 18px; }
       #backBtn {
-        padding: 12px; font-size: 15px;
-        border-radius: 14px; cursor: pointer; border: 2px solid #ccc;
-        background: white; color: #888; font-family: inherit;
+        padding: 12px; font-size: 15px; border-radius: 14px;
+        cursor: pointer; border: 2px solid #ddd;
+        background: white; color: #999; font-family: inherit;
         -webkit-tap-highlight-color: transparent;
       }
       #confirmBtn {
@@ -111,13 +108,12 @@
         -webkit-tap-highlight-color: transparent;
       }
 
-      #status { font-size: 14px; color: #c00; min-height: 1.2em; padding: 0 4px; }
+      #status { font-size: 14px; color: #c00; min-height: 1.2em; padding: 0 4px; flex-shrink: 0; }
 
       #timerBar {
         position: fixed; bottom: 0; left: 0;
-        height: 4px; background: #1a1a1a;
-        width: 100%; transform-origin: left;
-        transition: transform 1s linear;
+        height: 4px; background: #1a1a1a; width: 100%;
+        transform-origin: left; transition: transform 1s linear;
       }
 
       body::before {
@@ -127,9 +123,6 @@
         opacity: 0.10; pointer-events: none;
       }
       body > * { position: relative; z-index: 1; }
-
-      body { padding-left: max(24px, env(safe-area-inset-left));
-             padding-right: max(24px, env(safe-area-inset-right)); }
     </style>
   </head>
   <body>
@@ -151,8 +144,10 @@
     <div id="heading"><h1>Sign<br>In</h1></div>
 
     <div id="searchArea">
+
+      <!-- Name search -->
       <div id="searchWrap">
-        <input id="searchInput" type="text" placeholder="Type your name…"
+        <input id="searchInput" type="text" placeholder="Type your name..."
                autocomplete="off" autocorrect="off" autocapitalize="words" inputmode="text">
         <div id="results"></div>
       </div>
@@ -160,16 +155,16 @@
       <!-- Step 1: pick a project -->
       <div id="projectPicker">
         <div id="projectPickerLabel">Choose your project or team</div>
-        <div id="projectList"></div>
+        <div id="projectBtnList"></div>
       </div>
 
       <!-- Step 2: enter details -->
       <div id="newPersonForm">
-        <div id="selectedProjectBadge" style="font-size:13px;color:#888;padding-left:4px;"></div>
-        <label for="jobTitleInput" id="jobTitleLabel">Job title (optional)</label>
+        <div id="selectedProjectBadge"></div>
+        <label for="jobTitleInput">Job title (optional)</label>
         <input id="jobTitleInput" type="text" placeholder="e.g. Producer"
                autocomplete="off" autocapitalize="words" inputmode="text">
-        <div id="companyRow">
+        <div id="companyRow" style="display:none; flex-direction:column; gap:4px;">
           <label for="companyInput">Company (optional)</label>
           <input id="companyInput" type="text" placeholder="e.g. BBC"
                  autocomplete="off" inputmode="text">
@@ -184,15 +179,16 @@
     <div id="timerBar"></div>
 
     <script>
-      let peopleData = null;
+      var peopleData = null;
+      var selectedProject = null;
 
-      // Inactivity timer
-      let timer, timeLeft = 30;
-      const bar = document.getElementById('timerBar');
+      // ── Inactivity timer ──
+      var timer, timeLeft = 30;
+      var bar = document.getElementById('timerBar');
       function resetTimer() {
         clearInterval(timer); timeLeft = 30;
         bar.style.transform = 'scaleX(1)';
-        timer = setInterval(() => {
+        timer = setInterval(function() {
           timeLeft--;
           bar.style.transform = 'scaleX(' + (timeLeft / 30) + ')';
           if (timeLeft <= 0) { clearInterval(timer); window.location.href = 'index.html'; }
@@ -202,198 +198,217 @@
       document.addEventListener('click', resetTimer);
       resetTimer();
 
-      async function loadPeople() {
-        try {
-          const res = await fetch('/api/people/active');
-          peopleData = await res.json();
-        } catch (e) { document.getElementById('status').textContent = 'Could not load people list.'; }
+      // ── Load people ──
+      function loadPeople() {
+        fetch('/api/people/active').then(function(r) { return r.json(); }).then(function(data) {
+          peopleData = data;
+        }).catch(function() {
+          document.getElementById('status').textContent = 'Could not load people list.';
+        });
       }
 
-      document.getElementById('searchInput').addEventListener('input', function () {
-        const query = this.value.trim().toLowerCase();
-        const resultsBox = document.getElementById('results');
-        document.getElementById('newVisitorForm').classList.remove('visible');
+      // ── Search ──
+      document.getElementById('searchInput').addEventListener('input', function() {
+        var query = this.value.trim().toLowerCase();
+        var resultsBox = document.getElementById('results');
+
+        // Hide secondary panels when typing
+        document.getElementById('projectPicker').classList.remove('visible');
+        document.getElementById('newPersonForm').classList.remove('visible');
         document.getElementById('status').textContent = '';
+
         if (query.length < 1) { resultsBox.style.display = 'none'; return; }
 
-        const matches = [];
-        if (peopleData) {
+        // Find matches
+        var matches = [];
+        if (peopleData && peopleData.projects) {
           peopleData.projects.forEach(function(proj) {
-            proj.people.forEach(function(p) {
-              if (p.name.toLowerCase().includes(query)) {
-                matches.push(Object.assign({}, p, { projectName: proj.name, projectId: proj.id, isVisitor: proj.visitorProject }));
-              }
-            });
+            if (proj.people) {
+              proj.people.forEach(function(p) {
+                if (p.name.toLowerCase().indexOf(query) !== -1) {
+                  matches.push({
+                    id: p.id, name: p.name, jobTitle: p.jobTitle || '',
+                    projectName: proj.name, projectId: proj.id
+                  });
+                }
+              });
+            }
           });
         }
 
         resultsBox.innerHTML = '';
 
-        const newDiv = document.createElement('div');
-        newDiv.className = 'result-item';
-        newDiv.innerHTML = '<div class="result-name" style="color:#888">+ Sign in as a visitor</div><div class="result-meta">Not on the list</div>';
-        newDiv.onclick = function() { showNewVisitorForm(document.getElementById('searchInput').value.trim()); };
+        // Show matched people
+        matches.forEach(function(p) {
+          var div = document.createElement('div');
+          div.className = 'result-item';
+          div.innerHTML = '<div class="result-name">' + esc(p.name) + '</div>' +
+            '<div class="result-meta">' + esc(p.projectName) + (p.jobTitle ? ' &middot; ' + esc(p.jobTitle) : '') + '</div>';
+          div.addEventListener('click', function() { signIn(p); });
+          resultsBox.appendChild(div);
+        });
 
-        if (matches.length === 0) {
-          resultsBox.appendChild(newDiv);
-        } else {
-          matches.forEach(function(p) {
-            const div = document.createElement('div');
-            div.className = 'result-item';
-            div.innerHTML = '<div class="result-name">' + escHtml(p.name) + '</div><div class="result-meta">' + escHtml(p.projectName) + (p.jobTitle ? ' \u00b7 ' + escHtml(p.jobTitle) : '') + '</div>';
-            div.onclick = function() { signIn(p); };
-            resultsBox.appendChild(div);
-          });
-          resultsBox.appendChild(newDiv);
-        }
+        // Always show "not on the list" option
+        var newDiv = document.createElement('div');
+        newDiv.className = 'result-item';
+        newDiv.innerHTML = '<div class="result-name" style="color:#888">+ Not on the list?</div>' +
+          '<div class="result-meta">Add yourself to a project</div>';
+        var nameVal = this.value.trim();
+        newDiv.addEventListener('click', function() { startNewPerson(nameVal); });
+        resultsBox.appendChild(newDiv);
+
         resultsBox.style.display = 'block';
       });
 
+      // Close results on outside click
       document.addEventListener('click', function(e) {
-        if (!document.getElementById('searchWrap').contains(e.target))
+        if (!document.getElementById('searchWrap').contains(e.target)) {
           document.getElementById('results').style.display = 'none';
+        }
       });
 
-      let selectedProject = null;
+      // ── Sign in existing person ──
+      function signIn(person) {
+        document.getElementById('results').style.display = 'none';
+        sessionStorage.setItem('visitorName', person.name);
+        sessionStorage.setItem('visitorProject', person.projectName);
+        sessionStorage.setItem('isNewVisitor', 'false');
+        fetch('/api/signin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ personId: person.id, name: person.name, jobTitle: person.jobTitle, project: person.projectName })
+        }).then(function(r) { return r.json(); }).then(function(data) {
+          if (data.error) { document.getElementById('status').textContent = data.error; return; }
+          window.location.href = 'page4.html';
+        }).catch(function() {
+          document.getElementById('status').textContent = 'Could not sign in.';
+        });
+      }
 
-      function showProjectPicker(name) {
-        if (name !== undefined) {
-          document.getElementById('results').style.display = 'none';
-          document.getElementById('searchInput').value = name;
-        }
+      // ── New person: show project picker ──
+      function startNewPerson(name) {
+        document.getElementById('results').style.display = 'none';
+        document.getElementById('searchInput').value = name;
+        showProjectPicker();
+      }
+
+      function showProjectPicker() {
         selectedProject = null;
         document.getElementById('newPersonForm').classList.remove('visible');
         document.getElementById('projectPicker').classList.add('visible');
 
-        // Build project buttons
-        const list = document.getElementById('projectList');
+        var list = document.getElementById('projectBtnList');
         list.innerHTML = '';
-        if (peopleData) {
+        if (peopleData && peopleData.projects) {
           peopleData.projects.forEach(function(proj) {
-            const btn = document.createElement('button');
+            var btn = document.createElement('button');
             btn.className = 'proj-btn';
-            const isVisitor = proj.visitorProject;
-            const meta = isVisitor ? 'Guest / one-off visitor' : (proj.people.length + ' member' + (proj.people.length !== 1 ? 's' : ''));
-            btn.innerHTML = escHtml(proj.name) + '<div class="proj-meta">' + meta + '</div>';
-            btn.onclick = function() { pickProject(proj); };
+            var count = (proj.people || []).length;
+            var meta = proj.visitorProject ? 'Guest / visitor' : (count + ' member' + (count !== 1 ? 's' : ''));
+            btn.innerHTML = esc(proj.name) + '<div class="proj-meta">' + meta + '</div>';
+            btn.addEventListener('click', function() { pickProject(proj); });
             list.appendChild(btn);
           });
         }
         sessionStorage.setItem('isNewVisitor', 'true');
       }
 
-      // Keep old name for compatibility
-      function showNewVisitorForm(name) { showProjectPicker(name); }
-
       function pickProject(proj) {
         selectedProject = proj;
         document.getElementById('projectPicker').classList.remove('visible');
         document.getElementById('newPersonForm').classList.add('visible');
         document.getElementById('selectedProjectBadge').textContent = 'Adding to: ' + proj.name;
-
-        // Visitor projects show company field, others show job title
-        const isVisitor = proj.visitorProject;
-        document.getElementById('jobTitleLabel').textContent = isVisitor ? 'Job title (optional)' : 'Job title (optional)';
-        document.getElementById('companyRow').style.display = isVisitor ? 'flex' : 'none';
-        document.getElementById('companyRow').style.flexDirection = 'column';
-        document.getElementById('companyRow').style.gap = '4px';
         document.getElementById('jobTitleInput').value = '';
         document.getElementById('companyInput').value = '';
+        // Show company field only for visitor projects
+        document.getElementById('companyRow').style.display = proj.visitorProject ? 'flex' : 'none';
         document.getElementById('jobTitleInput').focus();
       }
 
-      function signIn(person) {
-        document.getElementById('results').style.display = 'none';
-        document.getElementById('searchInput').value = person.name;
-        sessionStorage.setItem('visitorName', person.name);
-        sessionStorage.setItem('visitorProject', person.projectName);
-        sessionStorage.setItem('visitorJobTitle', person.jobTitle || '');
-        sessionStorage.setItem('isNewVisitor', 'false');
-        fetch('/api/signin', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ personId: person.id, name: person.name, jobTitle: person.jobTitle || '', project: person.projectName })
-        }).then(function(r) { return r.json(); }).then(function(data) {
-          if (data.error) { document.getElementById('status').textContent = data.error; return; }
-          window.location.href = 'page4.html';
-        }).catch(function() { document.getElementById('status').textContent = 'Could not sign in.'; });
-      }
+      // ── Confirm new person sign in ──
+      function confirmSignIn() {
+        var name = document.getElementById('searchInput').value.trim();
+        var jobTitle = document.getElementById('jobTitleInput').value.trim();
+        var company = document.getElementById('companyInput').value.trim();
 
-      async function confirmSignIn() {
-        const name     = document.getElementById('searchInput').value.trim();
-        const jobTitle = document.getElementById('jobTitleInput').value.trim();
-        const company  = document.getElementById('companyInput').value.trim();
         if (!name) { document.getElementById('status').textContent = 'Please enter your name.'; return; }
         if (!selectedProject) { document.getElementById('status').textContent = 'Please choose a project.'; return; }
 
-        const projectName = selectedProject.name;
-        const projectId   = selectedProject.id;
+        var projectName = selectedProject.name;
+        var projectId = selectedProject.id;
 
-        try {
-          // Save permanently to the project
-          await fetch('/api/people', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, jobTitle: jobTitle, company: company, projectId: projectId })
-          });
-          // Sign in
-          const res = await fetch('/api/signin', {
-            method: 'POST', headers: { 'Content-Type': 'application/json' },
+        document.getElementById('confirmBtn').textContent = 'Signing in...';
+
+        // Save to project then sign in
+        fetch('/api/people', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name: name, jobTitle: jobTitle, company: company, projectId: projectId })
+        }).then(function() {
+          return fetch('/api/signin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name: name, jobTitle: jobTitle, project: projectName })
           });
-          const data = await res.json();
-          if (data.error && data.error !== 'Already signed in') {
-            document.getElementById('status').textContent = data.error; return;
+        }).then(function(r) { return r.json(); }).then(function(data) {
+          if (data.error && data.error.indexOf('signed in') === -1) {
+            document.getElementById('status').textContent = data.error;
+            document.getElementById('confirmBtn').textContent = 'Sign In';
+            return;
           }
           sessionStorage.setItem('visitorName', name);
           sessionStorage.setItem('visitorProject', projectName);
           sessionStorage.setItem('isNewVisitor', 'true');
           window.location.href = 'page4.html';
-        } catch(e) { document.getElementById('status').textContent = 'Could not sign in.'; }
+        }).catch(function() {
+          document.getElementById('status').textContent = 'Could not sign in.';
+          document.getElementById('confirmBtn').textContent = 'Sign In';
+        });
       }
 
-      function escHtml(str) {
+      function esc(str) {
         return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
       }
 
       document.getElementById('logo').onclick = function() { window.location.href = 'index.html'; };
 
-      async function loadWeather() {
-        try {
-          const url = 'https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1';
-          const res = await fetch(url);
-          const data = await res.json();
-          const temp = Math.round(data.current.temperature_2m);
-          const code = data.current.weathercode;
-          const sunrise = data.daily.sunrise[0].split('T')[1];
-          const sunset  = data.daily.sunset[0].split('T')[1];
-          const icMap = {0:'sunny',1:'partly',2:'partly',3:'cloudy',45:'foggy',48:'foggy',51:'drizzle',61:'rainy',71:'snowy',80:'rainy',95:'stormy'};
-          const emojiMap = {'sunny':'&#x2600;','partly':'&#x26C5;','cloudy':'&#x2601;','foggy':'&#x1F32B;','drizzle':'&#x1F326;','rainy':'&#x1F327;','snowy':'&#x1F328;','stormy':'&#x26C8;'};
-          const key = Object.keys(icMap).reverse().find(function(k) { return code >= parseInt(k); }) || '0';
-          const emoji = emojiMap[icMap[key]] || '&#x1F321;';
-          const el = document.getElementById('weatherTemp');
-          const ic = document.getElementById('weatherIcon');
-          const su = document.getElementById('weatherSun');
-          if (el) el.textContent = temp + '\u00b0C';
-          if (ic) ic.innerHTML = emoji;
-          if (su) su.innerHTML = 'Rise ' + sunrise + '&nbsp;&nbsp;Set ' + sunset;
-        } catch (e) {}
+      // ── Weather ──
+      function loadWeather() {
+        fetch('https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
+          .then(function(r) { return r.json(); }).then(function(data) {
+            var temp = Math.round(data.current.temperature_2m);
+            var code = data.current.weathercode;
+            var sunrise = data.daily.sunrise[0].split('T')[1];
+            var sunset  = data.daily.sunset[0].split('T')[1];
+            var icons = {0:'&#x2600;',1:'&#x26C5;',2:'&#x26C5;',3:'&#x2601;',45:'&#x1F32B;',51:'&#x1F326;',61:'&#x1F327;',71:'&#x1F328;',80:'&#x1F327;',95:'&#x26C8;'};
+            var key = Object.keys(icons).reverse().find(function(k) { return code >= parseInt(k); }) || '0';
+            var el = document.getElementById('weatherTemp');
+            var ic = document.getElementById('weatherIcon');
+            var su = document.getElementById('weatherSun');
+            if (el) el.textContent = temp + '\u00b0C';
+            if (ic) ic.innerHTML = icons[key] || '&#x1F321;';
+            if (su) su.innerHTML = 'Rise ' + sunrise + '&nbsp;&nbsp;Set ' + sunset;
+          }).catch(function() {});
       }
       loadWeather();
-      setInterval(loadWeather, 10 * 60 * 1000);
+      setInterval(loadWeather, 600000);
 
+      // ── Clock ──
       function getDaySuffix(d) {
         if (d >= 11 && d <= 13) return 'th';
         switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
       }
       function updateClock() {
-        const now = new Date();
-        const dayName = now.toLocaleString('en-GB', { weekday: 'long' });
-        const day = now.getDate();
-        const month = now.toLocaleString('en-GB', { month: 'long' });
-        const time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-        const el = document.getElementById('clock');
+        var now = new Date();
+        var dayName = now.toLocaleString('en-GB', { weekday: 'long' });
+        var day = now.getDate();
+        var month = now.toLocaleString('en-GB', { month: 'long' });
+        var time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+        var el = document.getElementById('clock');
         if (el) el.innerHTML = dayName + ' ' + day + getDaySuffix(day) + ' ' + month + '<br>' + time;
       }
-      setInterval(updateClock, 1000); updateClock();
+      setInterval(updateClock, 1000);
+      updateClock();
 
       loadPeople();
       document.getElementById('searchInput').focus();
