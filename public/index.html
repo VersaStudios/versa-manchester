@@ -74,15 +74,15 @@
     /* NFC feedback */
     #staffBtn {
       position: fixed; bottom: 20px; right: 20px;
-      background: transparent; border: 1px solid rgba(0,0,0,0.2);
-      color: #aaa; font-size: 12px; font-family: Arial, sans-serif;
-      padding: 8px 16px; border-radius: 999px; cursor: pointer;
+      background: #1a1a1a; border: none;
+      color: #fff; font-size: 13px; font-family: Arial, sans-serif;
+      padding: 10px 20px; border-radius: 999px; cursor: pointer;
       letter-spacing: 0.08em; text-transform: uppercase;
       -webkit-tap-highlight-color: transparent;
-      transition: opacity 0.2s;
+      opacity: 0.5; transition: opacity 0.2s;
       z-index: 10;
     }
-    #staffBtn:active { opacity: 0.5; }
+    #staffBtn:hover, #staffBtn:active { opacity: 1; }
     #nfcMsg {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
       background: #1a1a1a; color: #fff; padding: 12px 28px;
