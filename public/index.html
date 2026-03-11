@@ -145,16 +145,6 @@
 
       startNFC();
 
-
-
-      // ── Clock ──
-      });
-        const day = now.getDate();
-        const month = now.toLocaleString('en-GB', { month: 'long' });
-        const time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-        document.getElementById('clock').textContent = dayName + ' ' + day + getDaySuffix(day) + ' ' + month + '  ' + time;
-      }
-
       // ── Weather (Open-Meteo, free, no key needed) ──
       // Manchester: lat 53.4808, lon -2.2426
       async function loadWeather() {
