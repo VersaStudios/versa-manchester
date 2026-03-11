@@ -73,16 +73,14 @@
 
     /* NFC feedback */
     #staffBtn {
-      position: fixed; bottom: 20px; right: 20px;
-      background: #1a1a1a; border: none;
-      color: #fff; font-size: 13px; font-family: Arial, sans-serif;
-      padding: 10px; border-radius: 999px; cursor: pointer;
-      letter-spacing: 0.08em; text-transform: uppercase;
+      background: transparent; border: none;
+      padding: 0; cursor: pointer;
       -webkit-tap-highlight-color: transparent;
       opacity: 0.5; transition: opacity 0.2s;
-      z-index: 10;
+      flex-shrink: 0;
     }
     #staffBtn:hover, #staffBtn:active { opacity: 1; }
+    #staffBtn img { width: 32px; height: 32px; display: block; }
     #nfcMsg {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
       background: #1a1a1a; color: #fff; padding: 12px 28px;
@@ -94,6 +92,7 @@
 <body>
 
   <div id="topBar">
+    <button id="staffBtn" onclick="window.location.href='monitor.html'"><img src="List.png" alt="&#9776;"></button>
     <div id="topRight">
       <div id="clock"></div>
       <div id="weatherBlock">
@@ -117,7 +116,6 @@
   </div>
 
   <div id="nfcMsg"></div>
-  <button id="staffBtn" onclick="window.location.href='monitor.html'"><img src="List.png" style="width:24px;height:24px;display:block;"></button>
 
   <script>
     // ── Clock ──
