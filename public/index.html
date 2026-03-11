@@ -9,10 +9,13 @@
         display: flex; justify-content: space-between; align-items: flex-start;
         padding: 28px 36px 0; flex-shrink: 0; width: 100%;
       }
-      #logoArea { display: flex; flex-direction: column; gap: 6px; }
-      #logo { width: 110px; cursor: pointer; }
-      #siteLabel { font-size: 11px; font-weight: bold; letter-spacing: 0.2em; color: #aaa; text-transform: uppercase; }
-      #logo img { width: 100%; display: block; }
+      #centreLogoArea {
+        flex: 1; display: flex; flex-direction: column;
+        align-items: center; justify-content: center;
+        width: 100%;
+      }
+      #centreLogo { width: 280px; display: block; }
+      #siteLabel { font-size: 13px; font-weight: bold; letter-spacing: 0.22em; color: #aaa; text-transform: uppercase; margin-top: 12px; text-align: center; font-family: Arial, sans-serif; }
       #topRight { text-align: right; flex-shrink: 0; }
       #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; white-space: nowrap; text-align: right; text-transform: none; font-family: Arial, sans-serif; }
       #weatherBlock { margin-top: 4px; text-align: right; }
@@ -40,7 +43,6 @@
       #logoWrap img { width: 100%; display: block; }
 
       /* ── Buttons ── */
-      #spacer { flex: 0 0 16px; }
       #buttons {
         width: 100%; display: flex;
         padding: 0 28px 32px; gap: 24px;
@@ -82,11 +84,8 @@
   </head>
   <body>
 
-        <div id="topBar">
-      <div id="logoArea">
-        <div id="logo"><img src="Versa Logo.png" alt="Versa"></div>
-        <div id="siteLabel">Manchester</div>
-      </div>
+    <div id="topBar">
+      <div></div>
       <div id="topRight">
         <div id="clock"></div>
         <div id="weatherBlock">
@@ -99,7 +98,11 @@
       </div>
     </div>
 
-    <div id="spacer"></div>
+    <div id="centreLogoArea">
+      <img id="centreLogo" src="Versa Logo.png" alt="Versa">
+      <div id="siteLabel">Manchester</div>
+    </div>
+
     <div id="buttons">
       <button class="action-btn" onclick="window.location.href='page2.html'">In</button>
       <button class="action-btn" onclick="window.location.href='page3.html'">Out</button>
