@@ -184,15 +184,17 @@
           document.getElementById('results').style.display = 'none';
       });
 
-      function signOut(name) {
+      async function signOut(name) {
         document.getElementById('results').style.display = 'none';
         sessionStorage.setItem('visitorName', name);
         sessionStorage.setItem('isNewVisitor', 'false');
+        try {
+          await fetch('/api/signout', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ name })
+          });
+        } catch(e) {}
         window.location.href = 'page5.html';
-        fetch('/api/signout', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name })
-        }).catch(() => {});
       }
 
       function escHtml(str) {
