@@ -1,198 +1,106 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Goodbye — Versa</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<head>
+  <title>Goodbye — Versa</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
-      @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
-      #topBar {
-        display: flex; justify-content: space-between; align-items: flex-start;
-        padding: 28px 36px 0; flex-shrink: 0; width: 100%;
-      }
-      #logo { width: 110px; cursor: pointer; }
-      #logo img { width: 100%; display: block; }
-      #topRight { text-align: right; flex-shrink: 0; }
-      #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; white-space: nowrap; text-align: right; text-transform: none; font-family: Arial, sans-serif; }
-      #weatherBlock { margin-top: 4px; text-align: right; }
-      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
-      #weatherIcon { font-size: 16px; }
-      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; text-transform: none; font-family: Arial, sans-serif; }
-      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; text-align: right; text-transform: none; font-family: Arial, sans-serif; }
-      * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      height: 100vh; overflow: hidden;
+      font-family: 'Bebas Neue', Arial, sans-serif;
+      padding: 0 max(24px, env(safe-area-inset-left));
+    }
+    #topBar { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 0 0; flex-shrink: 0; }
+    #logo { width: 100px; cursor: pointer; }
+    #logo img { width: 100%; display: block; }
+    #topRight { text-align: right; }
+    #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; text-align: right; font-family: Arial, sans-serif; text-transform: none; }
+    #weatherBlock { margin-top: 3px; text-align: right; }
+    #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+    #weatherIcon { font-size: 15px; font-family: Arial, sans-serif; }
+    #weatherTemp { font-size: 13px; font-weight: bold; color: #555; font-family: Arial, sans-serif; text-transform: none; }
+    #weatherSun  { font-size: 11px; color: #999; margin-top: 1px; font-family: Arial, sans-serif; text-transform: none; }
+    #message { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; }
+    #farewell { font-size: 6vw; font-weight: 900; text-transform: uppercase; color: #1a1a1a; line-height: 1.05; letter-spacing: 0.02em; width: 100%; }
+    #nameText { font-size: 8vw; font-weight: 900; text-transform: uppercase; color: #1a1a1a; line-height: 1.05; letter-spacing: 0.02em; width: 100%; word-break: break-word; }
+    #subText { font-size: 2.8vw; font-weight: bold; text-transform: uppercase; color: #ccc; letter-spacing: 0.1em; margin-top: 14px; }
+    #closeBtn { flex-shrink: 0; margin-bottom: 28px; padding: 16px 44px; font-size: 18px; border-radius: 12px; cursor: pointer; border: 2px solid #1a1a1a; background: transparent; color: #1a1a1a; font-family: inherit; letter-spacing: 0.08em; text-transform: uppercase; -webkit-tap-highlight-color: transparent; transition: background 0.15s, color 0.15s; }
+    #closeBtn:active { background: #1a1a1a; color: white; }
+    #timerBar { position: fixed; bottom: 0; left: 0; height: 4px; background: #1a1a1a; width: 100%; transform-origin: left; transition: transform 1s linear; }
+    body::before { content: ''; position: fixed; inset: 0; z-index: 0; background-image: url('studio-bw.jpg'); background-size: cover; background-position: center; opacity: 0.10; pointer-events: none; }
+    body > * { position: relative; z-index: 1; }
+  </style>
+</head>
+<body>
 
-      body {
-        background: #ffffff;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: space-between;
-        height: 100vh; overflow: hidden;
-        font-family: 'Bebas Neue', 'Brother1816', Arial, sans-serif;
-        padding: 36px 24px 32px;
-      }
-
-      #logoWrap { width: 100px; }
-      #logoWrap img { width: 100%; display: block; }
-
-
-      #message {
-        flex: 1; display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        width: 100%; text-align: center;
-      }
-
-      #farewell {
-        font-size: 6vw; font-weight: 900;
-        text-transform: uppercase; color: #1a1a1a;
-        line-height: 1.05; letter-spacing: 0.02em; width: 100%;
-      }
-
-      #nameText {
-        font-size: 8vw; font-weight: 900;
-        text-transform: uppercase; color: #1a1a1a;
-        line-height: 1.05; letter-spacing: 0.02em;
-        width: 100%; word-break: break-word;
-      }
-
-      #subText {
-        font-size: 2.8vw; font-weight: bold;
-        text-transform: uppercase; color: #ccc;
-        letter-spacing: 0.1em; margin-top: 14px;
-      }
-
-      button {
-        flex-shrink: 0; padding: 16px 44px; font-size: 18px;
-        border-radius: 12px; cursor: pointer;
-        border: 2px solid #1a1a1a; background: transparent; color: #1a1a1a;
-        font-family: inherit; letter-spacing: 0.08em; text-transform: uppercase;
-        -webkit-tap-highlight-color: transparent;
-        transition: background 0.15s, color 0.15s;
-      }
-      button:active { background: #1a1a1a; color: white; }
-
-      #timerBar {
-        position: fixed; bottom: 0; left: 0;
-        height: 4px; background: #1a1a1a; width: 100%;
-        transform-origin: left; transition: transform 1s linear;
-      }
-
-      /* ── Safe edge padding ── */
-      body { padding-left: max(24px, env(safe-area-inset-left));
-             padding-right: max(24px, env(safe-area-inset-right)); }
-
-      /* ── Background image ── */
-      body::before {
-        content: '';
-        position: fixed; inset: 0; z-index: 0;
-        background-image: url('studio-bw.jpg');
-        background-size: cover;
-        background-position: center;
-        opacity: 0.10;
-        pointer-events: none;
-      }
-      body > * { position: relative; z-index: 1; }
-    </style>
-  </head>
-  <body>
-    <div id="topBar">
-      <div id="logo"><img src="Versa Logo.png" alt="Versa"></div>
-      <div id="topRight">
-        <div id="clock"></div>
-        <div id="weatherBlock">
-          <div id="weatherLine"><span id="weatherIcon"></span><span id="weatherTemp"></span></div>
-          <div id="weatherSun"></div>
-        </div>
+  <div id="topBar">
+    <div id="logo"><img src="Versa Logo.png" alt="Versa"></div>
+    <div id="topRight">
+      <div id="clock"></div>
+      <div id="weatherBlock">
+        <div id="weatherLine"><span id="weatherIcon"></span><span id="weatherTemp"></span></div>
+        <div id="weatherSun"></div>
       </div>
     </div>
-    <div id="message">
-      <div id="farewell"></div>
-      <div id="nameText"></div>
-      <div id="subText"></div>
-    </div>
-    <button onclick="goHome()">Close</button>
-    <div id="timerBar"></div>
+  </div>
 
-    <script>
-      const standardFarewells = [
-        'Goodbye', 'Bye', 'Farewell', 'See you',
-        'See you soon', 'See you later', 'Take care',
-        'Until next time', 'See you again soon',
-        'Safe travels', 'Bye for now'
-      ];
+  <div id="message">
+    <div id="farewell"></div>
+    <div id="nameText"></div>
+    <div id="subText"></div>
+  </div>
 
-      const visitorFarewells = [
-        'Thank you for visiting',
-        'We hope to see you again soon',
-        'Have a wonderful day'
-      ];
+  <button id="closeBtn" onclick="goHome()">Close</button>
+  <div id="timerBar"></div>
 
-      // Detect if the person was signed in as a visitor
-      // We store project in sessionStorage when signing out via NFC or name
-      const isVisitor = sessionStorage.getItem('isNewVisitor') === 'true';
-      const name = sessionStorage.getItem('visitorName') || 'there';
+  <script>
+    // ── Clock ──
+    function getDaySuffix(d) {
+      if (d >= 11 && d <= 13) return 'th';
+      switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
+    }
+    function updateClock() {
+      var now = new Date(); var day = now.getDate();
+      var el = document.getElementById('clock'); if (!el) return;
+      el.innerHTML = now.toLocaleString('en-GB',{weekday:'long'}) + ' ' + day + getDaySuffix(day) + ' ' + now.toLocaleString('en-GB',{month:'long'}) + '<br>' + now.toLocaleString('en-GB',{hour:'numeric',minute:'2-digit',hour12:true}).toLowerCase();
+    }
+    setInterval(updateClock, 1000); updateClock();
 
-      const pool = isVisitor ? visitorFarewells : standardFarewells;
-      const farewell = pool[Math.floor(Math.random() * pool.length)];
+    // ── Weather ──
+    function loadWeather() {
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
+        .then(function(r){return r.json();}).then(function(d){
+          var icons={0:'☀️',1:'⛅',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',61:'🌧️',71:'🌨️',80:'🌧️',95:'⛈️'};
+          var key=Object.keys(icons).reverse().find(function(k){return d.current.weathercode>=+k;})||'0';
+          document.getElementById('weatherTemp').textContent=Math.round(d.current.temperature_2m)+'°C';
+          document.getElementById('weatherIcon').textContent=icons[key];
+          document.getElementById('weatherSun').textContent='Rise '+d.daily.sunrise[0].split('T')[1]+'  Set '+d.daily.sunset[0].split('T')[1];
+        }).catch(function(){});
+    }
+    loadWeather(); setInterval(loadWeather, 600000);
 
-      document.getElementById('farewell').textContent = farewell + ',';
-      document.getElementById('nameText').textContent  = name + '.';
+    // ── Farewell ──
+    var standardFarewells = ['Goodbye','Bye','Farewell','See you','See you soon','See you later','Take care','Until next time','Bye for now'];
+    var visitorFarewells = ['Thank you for visiting','We hope to see you again','Have a wonderful day'];
+    var isVisitor = sessionStorage.getItem('isNewVisitor') === 'true';
+    var name = sessionStorage.getItem('visitorName') || 'there';
+    var pool = isVisitor ? visitorFarewells : standardFarewells;
+    var farewell = pool[Math.floor(Math.random() * pool.length)];
+    document.getElementById('farewell').textContent = farewell + ',';
+    document.getElementById('nameText').textContent = name + '.';
+    if (name.length > 10) document.getElementById('nameText').style.fontSize = '6.5vw';
 
-      // Scale down for long names
-      const nameEl = document.getElementById('nameText');
-      if (name.length > 10) nameEl.style.fontSize = '6.5vw';
-      if (name.length > 16) nameEl.style.fontSize = '6.5vw';
-
-      // ── Timer (3s auto close + red bar) ──
-      let timeLeft = 3;
-      const bar = document.getElementById('timerBar');
-      bar.style.transform = 'scaleX(1)';
-      const t = setInterval(() => {
-        timeLeft--;
-        bar.style.transform = `scaleX(${timeLeft / 3})`;
-        if (timeLeft <= 0) { clearInterval(t); goHome(); }
-      }, 1000);
-
-
-      function goHome() { window.location.href = 'index.html'; }
-
-      async function loadWeather() {
-        try {
-          const url = 'https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1';
-          const res = await fetch(url);
-          const data = await res.json();
-          const temp = Math.round(data.current.temperature_2m);
-          const code = data.current.weathercode;
-          const sunrise = data.daily.sunrise[0].split('T')[1];
-          const sunset  = data.daily.sunset[0].split('T')[1];
-          const icMap = {0:'sunny',1:'partly',2:'partly',3:'cloudy',45:'foggy',48:'foggy',51:'drizzle',61:'rainy',71:'snowy',80:'rainy',95:'stormy'};
-          const emojiMap = {'sunny':'&#x2600;','partly':'&#x26C5;','cloudy':'&#x2601;','foggy':'&#x1F32B;','drizzle':'&#x1F326;','rainy':'&#x1F327;','snowy':'&#x1F328;','stormy':'&#x26C8;'};
-          const key = Object.keys(icMap).reverse().find(k => code >= parseInt(k)) || '0';
-          const emoji = emojiMap[icMap[key]] || '&#x1F321;';
-          const el = document.getElementById('weatherTemp');
-          const ic = document.getElementById('weatherIcon');
-          const su = document.getElementById('weatherSun');
-          if (el) el.textContent = temp + String.fromCharCode(176) + 'C';
-          if (ic) ic.innerHTML = emoji;
-          if (su) su.innerHTML = 'Rise ' + sunrise + ' &nbsp; Set ' + sunset;
-        } catch (e) {}
-      }
-      loadWeather();
-      setInterval(loadWeather, 10 * 60 * 1000);
-
-      function getDaySuffix(d) {
-        if (d >= 11 && d <= 13) return 'th';
-        switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
-      }
-      function updateClock() {
-        var now = new Date();
-        var dayName = now.toLocaleString('en-GB', { weekday: 'long' });
-        var day = now.getDate();
-        var month = now.toLocaleString('en-GB', { month: 'long' });
-        var time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-        var el = document.getElementById('clock');
-        if (el) el.innerHTML = dayName + ' ' + day + getDaySuffix(day) + ' ' + month + '<br>' + time;
-      }
-      setInterval(updateClock, 1000);
-      updateClock();
-    </script>
-  </body>
+    // ── Timer ──
+    function goHome() { window.location.href = 'index.html'; }
+    var timeLeft = 3;
+    var bar = document.getElementById('timerBar');
+    bar.style.transform = 'scaleX(1)';
+    var t = setInterval(function() {
+      timeLeft--; bar.style.transform = 'scaleX(' + (timeLeft/3) + ')';
+      if (timeLeft <= 0) { clearInterval(t); goHome(); }
+    }, 1000);
+  </script>
+</body>
 </html>

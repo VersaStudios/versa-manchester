@@ -1,415 +1,253 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Sign In — Versa</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+<head>
+  <title>Sign In — Versa</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
   <style>
-      @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
-      #topBar {
-        display: flex; justify-content: space-between; align-items: flex-start;
-        padding: 28px 36px 0; flex-shrink: 0; width: 100%;
-      }
-      #logo { width: 110px; cursor: pointer; }
-      #logo img { width: 100%; display: block; }
-      #topRight { text-align: right; flex-shrink: 0; }
-      #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; white-space: nowrap; text-align: right; text-transform: none; font-family: Arial, sans-serif; }
-      #weatherBlock { margin-top: 4px; text-align: right; }
-      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
-      #weatherIcon { font-size: 16px; }
-      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; text-transform: none; font-family: Arial, sans-serif; }
-      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; text-align: right; text-transform: none; font-family: Arial, sans-serif; }
-      * { box-sizing: border-box; margin: 0; padding: 0; }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #fff; display: flex; flex-direction: column; align-items: center;
+      height: 100vh; overflow: hidden;
+      font-family: 'Bebas Neue', Arial, sans-serif;
+      padding: 0 max(24px, env(safe-area-inset-left));
+    }
+    /* Top bar */
+    #topBar { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 0 0; flex-shrink: 0; }
+    #logo { width: 100px; cursor: pointer; }
+    #logo img { width: 100%; display: block; }
+    #topRight { text-align: right; }
+    #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; text-align: right; font-family: Arial, sans-serif; text-transform: none; }
+    #weatherBlock { margin-top: 3px; text-align: right; }
+    #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+    #weatherIcon { font-size: 15px; font-family: Arial, sans-serif; }
+    #weatherTemp { font-size: 13px; font-weight: bold; color: #555; font-family: Arial, sans-serif; text-transform: none; }
+    #weatherSun  { font-size: 11px; color: #999; margin-top: 1px; font-family: Arial, sans-serif; text-transform: none; }
+    /* Heading */
+    #heading { padding: 16px 0 0; flex-shrink: 0; width: 100%; text-align: center; }
+    #heading h1 { font-size: 11vw; font-weight: 900; text-transform: uppercase; color: #1a1a1a; line-height: 1.0; letter-spacing: 0.02em; }
+    /* Search area */
+    #searchArea { flex: 1; padding: 20px 0 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; width: 100%; max-width: 560px; }
+    #searchWrap { position: relative; flex-shrink: 0; }
+    input[type="text"] { width: 100%; padding: 18px 20px; border-radius: 14px; border: 2px solid #1a1a1a; font-size: 24px; font-family: inherit; background: white; color: #1a1a1a; outline: none; -webkit-user-select: text; }
+    input[type="text"]:focus { border-color: #1a1a1a; }
+    #results { display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #1a1a1a; border-top: none; border-radius: 0 0 14px 14px; z-index: 10; max-height: 260px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+    .result-item { padding: 16px 20px; cursor: pointer; border-bottom: 1px solid #f0f0f0; -webkit-tap-highlight-color: transparent; }
+    .result-item:last-child { border-bottom: none; }
+    .result-item:active { background: #f5f5f5; }
+    .result-name { font-size: 20px; font-weight: bold; color: #1a1a1a; line-height: 1.3; letter-spacing: 0.02em; }
+    .result-meta { font-size: 14px; color: #888; margin-top: 4px; line-height: 1.3; font-family: Arial, sans-serif; text-transform: none; }
+    /* Project picker */
+    #projectPicker { display: none; flex-direction: column; gap: 10px; flex-shrink: 0; }
+    #projectPicker.visible { display: flex; }
+    #projectPickerLabel { font-size: 14px; color: #888; padding-left: 4px; font-family: Arial, sans-serif; text-transform: none; }
+    .proj-btn { width: 100%; padding: 16px 20px; font-size: 18px; font-weight: bold; border-radius: 14px; cursor: pointer; text-align: left; border: 2px solid #1a1a1a; background: white; color: #1a1a1a; font-family: inherit; -webkit-tap-highlight-color: transparent; transition: background 0.1s, color 0.1s; }
+    .proj-btn:active { background: #1a1a1a; color: white; }
+    .proj-meta { font-size: 13px; color: #888; font-weight: normal; margin-top: 3px; font-family: Arial, sans-serif; text-transform: none; }
+    .proj-btn:active .proj-meta { color: rgba(255,255,255,0.6); }
+    /* Details form */
+    #newPersonForm { display: none; flex-direction: column; gap: 10px; flex-shrink: 0; }
+    #newPersonForm.visible { display: flex; }
+    #selectedProjectBadge { font-size: 13px; color: #888; padding-left: 4px; font-family: Arial, sans-serif; text-transform: none; }
+    #newPersonForm label { font-size: 13px; color: #888; padding-left: 4px; font-family: Arial, sans-serif; text-transform: none; }
+    #newPersonForm input { font-size: 18px; padding: 14px 18px; }
+    #backBtn { padding: 12px; font-size: 15px; border-radius: 14px; cursor: pointer; border: 2px solid #ddd; background: white; color: #999; font-family: inherit; -webkit-tap-highlight-color: transparent; }
+    #confirmBtn { padding: 16px; font-size: 20px; font-weight: bold; border-radius: 14px; cursor: pointer; border: none; background: #1a1a1a; color: white; font-family: inherit; letter-spacing: 0.04em; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
+    #status { font-size: 14px; color: #c00; min-height: 1.2em; padding: 0 4px; flex-shrink: 0; font-family: Arial, sans-serif; text-transform: none; }
+    /* Timer bar */
+    #timerBar { position: fixed; bottom: 0; left: 0; height: 4px; background: #1a1a1a; width: 100%; transform-origin: left; transition: transform 1s linear; }
+    /* BG */
+    body::before { content: ''; position: fixed; inset: 0; z-index: 0; background-image: url('studio-bw.jpg'); background-size: cover; background-position: center; opacity: 0.10; pointer-events: none; }
+    body > * { position: relative; z-index: 1; }
+  </style>
+</head>
+<body>
 
-      body {
-        background: #ffffff;
-        display: flex; flex-direction: column; align-items: center;
-        height: 100vh; overflow: hidden;
-        font-family: 'Bebas Neue', 'Brother1816', Arial, sans-serif;
-        padding-left: max(24px, env(safe-area-inset-left));
-        padding-right: max(24px, env(safe-area-inset-right));
-      }
-
-      #heading { padding: 20px 36px 0; flex-shrink: 0; width: 100%; text-align: center; }
-      #heading h1 {
-        font-size: 11vw; font-weight: 900;
-        text-transform: uppercase; color: #1a1a1a;
-        line-height: 1.0; letter-spacing: 0.02em;
-      }
-
-      #searchArea {
-        flex: 1; padding: 28px 36px 24px;
-        display: flex; flex-direction: column; gap: 12px;
-        overflow-y: auto; width: 100%; max-width: 560px;
-      }
-
-      #searchWrap { position: relative; flex-shrink: 0; }
-
-      input[type="text"] {
-        width: 100%; padding: 18px 20px;
-        border-radius: 14px; border: 2px solid #1a1a1a;
-        font-size: 24px; font-family: inherit;
-        background: white; color: #1a1a1a; outline: none;
-        -webkit-user-select: text;
-      }
-      input[type="text"]:focus { border-color: #1a1a1a; }
-
-      #results {
-        display: none; position: absolute; top: 100%; left: 0; right: 0;
-        background: white; border: 2px solid #1a1a1a; border-top: none;
-        border-radius: 0 0 14px 14px; z-index: 10;
-        max-height: 260px; overflow-y: auto;
-        box-shadow: 0 8px 24px rgba(0,0,0,0.12);
-      }
-      .result-item {
-        padding: 18px 20px; cursor: pointer;
-        border-bottom: 1px solid #f0f0f0;
-        -webkit-tap-highlight-color: transparent;
-      }
-      .result-item:last-child { border-bottom: none; }
-      .result-item:active { background: #f5f5f5; }
-      .result-name { font-size: 20px; font-weight: bold; color: #1a1a1a; line-height: 1.3; letter-spacing: 0.02em; }
-      .result-meta { font-size: 14px; color: #888; margin-top: 5px; line-height: 1.3; letter-spacing: 0.01em; }
-
-      /* Project picker */
-      #projectPicker { display: none; flex-direction: column; gap: 10px; flex-shrink: 0; }
-      #projectPicker.visible { display: flex; }
-      #projectPickerLabel { font-size: 14px; color: #888; padding-left: 4px; }
-
-      .proj-btn {
-        width: 100%; padding: 16px 20px; font-size: 18px; font-weight: bold;
-        border-radius: 14px; cursor: pointer; text-align: left;
-        border: 2px solid #1a1a1a; background: white; color: #1a1a1a;
-        font-family: inherit; -webkit-tap-highlight-color: transparent;
-        transition: background 0.1s, color 0.1s;
-      }
-      .proj-btn:active { background: #1a1a1a; color: white; }
-      .proj-meta { font-size: 13px; color: #888; font-weight: normal; margin-top: 3px; }
-      .proj-btn:active .proj-meta { color: rgba(255,255,255,0.6); }
-
-      /* Details form */
-      #newPersonForm { display: none; flex-direction: column; gap: 10px; flex-shrink: 0; }
-      #newPersonForm.visible { display: flex; }
-      #selectedProjectBadge { font-size: 13px; color: #888; padding-left: 4px; }
-      #newPersonForm label { font-size: 13px; color: #888; padding-left: 4px; }
-      #newPersonForm input { font-size: 18px; padding: 14px 18px; }
-      #backBtn {
-        padding: 12px; font-size: 15px; border-radius: 14px;
-        cursor: pointer; border: 2px solid #ddd;
-        background: white; color: #999; font-family: inherit;
-        -webkit-tap-highlight-color: transparent;
-      }
-      #confirmBtn {
-        padding: 16px; font-size: 20px; font-weight: bold;
-        border-radius: 14px; cursor: pointer; border: none;
-        background: #1a1a1a; color: white; font-family: inherit;
-        letter-spacing: 0.04em; text-transform: uppercase;
-        -webkit-tap-highlight-color: transparent;
-      }
-
-      #status { font-size: 14px; color: #c00; min-height: 1.2em; padding: 0 4px; flex-shrink: 0; }
-
-      #timerBar {
-        position: fixed; bottom: 0; left: 0;
-        height: 4px; background: #1a1a1a; width: 100%;
-        transform-origin: left; transition: transform 1s linear;
-      }
-
-      body::before {
-        content: ''; position: fixed; inset: 0; z-index: 0;
-        background-image: url('studio-bw.jpg');
-        background-size: cover; background-position: center;
-        opacity: 0.10; pointer-events: none;
-      }
-      body > * { position: relative; z-index: 1; }
-    </style>
-  </head>
-  <body>
-
-    <div id="topBar">
-      <div id="logo"><img src="Versa Logo.png" alt="Versa"></div>
-      <div id="topRight">
-        <div id="clock"></div>
-        <div id="weatherBlock">
-          <div id="weatherLine">
-            <span id="weatherIcon"></span>
-            <span id="weatherTemp"></span>
-          </div>
-          <div id="weatherSun"></div>
-        </div>
+  <div id="topBar">
+    <div id="logo"><img src="Versa Logo.png" alt="Versa"></div>
+    <div id="topRight">
+      <div id="clock"></div>
+      <div id="weatherBlock">
+        <div id="weatherLine"><span id="weatherIcon"></span><span id="weatherTemp"></span></div>
+        <div id="weatherSun"></div>
       </div>
     </div>
+  </div>
 
-    <div id="heading"><h1>Sign<br>In</h1></div>
+  <div id="heading"><h1>Sign<br>In</h1></div>
 
-    <div id="searchArea">
-
-      <!-- Name search -->
-      <div id="searchWrap">
-        <input id="searchInput" type="text" placeholder="Type your name..."
-               autocomplete="off" autocorrect="off" autocapitalize="words" inputmode="text">
-        <div id="results"></div>
-      </div>
-
-      <!-- Step 1: pick a project -->
-      <div id="projectPicker">
-        <div id="projectPickerLabel">Choose your project or team</div>
-        <div id="projectBtnList"></div>
-      </div>
-
-      <!-- Step 2: enter details -->
-      <div id="newPersonForm">
-        <div id="selectedProjectBadge"></div>
-        <label for="jobTitleInput">Job title (optional)</label>
-        <input id="jobTitleInput" type="text" placeholder="e.g. Producer"
-               autocomplete="off" autocapitalize="words" inputmode="text">
-        <div id="companyRow" style="display:none; flex-direction:column; gap:4px;">
-          <label for="companyInput">Company (optional)</label>
-          <input id="companyInput" type="text" placeholder="e.g. BBC"
-                 autocomplete="off" inputmode="text">
-        </div>
-        <button id="backBtn" onclick="showProjectPicker()">&#8592; Change project</button>
-        <button id="confirmBtn" onclick="confirmSignIn()">Sign In</button>
-      </div>
-
-      <div id="status"></div>
+  <div id="searchArea">
+    <div id="searchWrap">
+      <input id="searchInput" type="text" placeholder="Type your name..."
+             autocomplete="off" autocorrect="off" autocapitalize="words" inputmode="text">
+      <div id="results"></div>
     </div>
+    <div id="projectPicker">
+      <div id="projectPickerLabel">Choose your project or team</div>
+      <div id="projectBtnList"></div>
+    </div>
+    <div id="newPersonForm">
+      <div id="selectedProjectBadge"></div>
+      <label for="jobTitleInput">Job title (optional)</label>
+      <input id="jobTitleInput" type="text" placeholder="e.g. Producer" autocomplete="off" autocapitalize="words" inputmode="text">
+      <div id="companyRow" style="display:none; flex-direction:column; gap:4px;">
+        <label for="companyInput">Company (optional)</label>
+        <input id="companyInput" type="text" placeholder="e.g. BBC" autocomplete="off" inputmode="text">
+      </div>
+      <button id="backBtn" onclick="showProjectPicker()">&#8592; Change project</button>
+      <button id="confirmBtn" onclick="confirmSignIn()">Sign In</button>
+    </div>
+    <div id="status"></div>
+  </div>
 
-    <div id="timerBar"></div>
+  <div id="timerBar"></div>
 
-    <script>
-      var peopleData = null;
-      var selectedProject = null;
+  <script>
+    var peopleData = null;
+    var selectedProject = null;
 
-      // ── Inactivity timer ──
-      var timer, timeLeft = 30;
-      var bar = document.getElementById('timerBar');
-      function resetTimer() {
-        clearInterval(timer); timeLeft = 30;
-        bar.style.transform = 'scaleX(1)';
-        timer = setInterval(function() {
-          timeLeft--;
-          bar.style.transform = 'scaleX(' + (timeLeft / 30) + ')';
-          if (timeLeft <= 0) { clearInterval(timer); window.location.href = 'index.html'; }
-        }, 1000);
-      }
-      document.addEventListener('touchstart', resetTimer);
-      document.addEventListener('click', resetTimer);
-      resetTimer();
+    // ── Clock ──
+    function getDaySuffix(d) {
+      if (d >= 11 && d <= 13) return 'th';
+      switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
+    }
+    function updateClock() {
+      var now = new Date(); var day = now.getDate();
+      var el = document.getElementById('clock'); if (!el) return;
+      el.innerHTML = now.toLocaleString('en-GB',{weekday:'long'}) + ' ' + day + getDaySuffix(day) + ' ' + now.toLocaleString('en-GB',{month:'long'}) + '<br>' + now.toLocaleString('en-GB',{hour:'numeric',minute:'2-digit',hour12:true}).toLowerCase();
+    }
+    setInterval(updateClock, 1000); updateClock();
 
-      // ── Load people ──
-      function loadPeople() {
-        fetch('/api/people/active').then(function(r) { return r.json(); }).then(function(data) {
-          peopleData = data;
-        }).catch(function() {
-          document.getElementById('status').textContent = 'Could not load people list.';
-        });
-      }
+    // ── Weather ──
+    function loadWeather() {
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
+        .then(function(r){return r.json();}).then(function(d){
+          var icons={0:'☀️',1:'⛅',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',61:'🌧️',71:'🌨️',80:'🌧️',95:'⛈️'};
+          var key=Object.keys(icons).reverse().find(function(k){return d.current.weathercode>=+k;})||'0';
+          document.getElementById('weatherTemp').textContent=Math.round(d.current.temperature_2m)+'°C';
+          document.getElementById('weatherIcon').textContent=icons[key];
+          document.getElementById('weatherSun').textContent='Rise '+d.daily.sunrise[0].split('T')[1]+'  Set '+d.daily.sunset[0].split('T')[1];
+        }).catch(function(){});
+    }
+    loadWeather(); setInterval(loadWeather, 600000);
 
-      // ── Search ──
-      document.getElementById('searchInput').addEventListener('input', function() {
-        var query = this.value.trim().toLowerCase();
-        var resultsBox = document.getElementById('results');
+    // ── Inactivity timer ──
+    var timer, timeLeft = 30;
+    var bar = document.getElementById('timerBar');
+    function resetTimer() {
+      clearInterval(timer); timeLeft = 30; bar.style.transform = 'scaleX(1)';
+      timer = setInterval(function() {
+        timeLeft--; bar.style.transform = 'scaleX(' + (timeLeft/30) + ')';
+        if (timeLeft <= 0) { clearInterval(timer); window.location.href = 'index.html'; }
+      }, 1000);
+    }
+    document.addEventListener('touchstart', resetTimer);
+    document.addEventListener('click', resetTimer);
+    resetTimer();
 
-        // Hide secondary panels when typing
-        document.getElementById('projectPicker').classList.remove('visible');
-        document.getElementById('newPersonForm').classList.remove('visible');
-        document.getElementById('status').textContent = '';
+    // ── Load people ──
+    function loadPeople() {
+      fetch('/api/people/active').then(function(r){return r.json();}).then(function(data){ peopleData = data; }).catch(function(){ document.getElementById('status').textContent = 'Could not load people list.'; });
+    }
 
-        if (query.length < 1) { resultsBox.style.display = 'none'; return; }
-
-        // Find matches
-        var matches = [];
-        if (peopleData && peopleData.projects) {
-          peopleData.projects.forEach(function(proj) {
-            if (proj.people) {
-              proj.people.forEach(function(p) {
-                if (p.name.toLowerCase().indexOf(query) !== -1) {
-                  matches.push({
-                    id: p.id, name: p.name, jobTitle: p.jobTitle || '',
-                    projectName: proj.name, projectId: proj.id
-                  });
-                }
-              });
-            }
+    // ── Search ──
+    document.getElementById('searchInput').addEventListener('input', function() {
+      var query = this.value.trim().toLowerCase();
+      var resultsBox = document.getElementById('results');
+      document.getElementById('projectPicker').classList.remove('visible');
+      document.getElementById('newPersonForm').classList.remove('visible');
+      document.getElementById('status').textContent = '';
+      if (query.length < 1) { resultsBox.style.display = 'none'; return; }
+      var matches = [];
+      if (peopleData && peopleData.projects) {
+        peopleData.projects.forEach(function(proj) {
+          if (proj.people) proj.people.forEach(function(p) {
+            if (p.name.toLowerCase().indexOf(query) !== -1)
+              matches.push({ id:p.id, name:p.name, jobTitle:p.jobTitle||'', projectName:proj.name, projectId:proj.id });
           });
-        }
-
-        resultsBox.innerHTML = '';
-
-        // Show matched people
-        matches.forEach(function(p) {
-          var div = document.createElement('div');
-          div.className = 'result-item';
-          div.innerHTML = '<div class="result-name">' + esc(p.name) + '</div>' +
-            '<div class="result-meta">' + esc(p.projectName) + (p.jobTitle ? ' &middot; ' + esc(p.jobTitle) : '') + '</div>';
-          div.addEventListener('click', function() { signIn(p); });
-          resultsBox.appendChild(div);
         });
-
-        // Always show "not on the list" option
-        var newDiv = document.createElement('div');
-        newDiv.className = 'result-item';
-        newDiv.innerHTML = '<div class="result-name" style="color:#888">+ Not on the list?</div>' +
-          '<div class="result-meta">Add yourself to a project</div>';
-        var nameVal = this.value.trim();
-        newDiv.addEventListener('click', function() { startNewPerson(nameVal); });
-        resultsBox.appendChild(newDiv);
-
-        resultsBox.style.display = 'block';
+      }
+      resultsBox.innerHTML = '';
+      matches.forEach(function(p) {
+        var div = document.createElement('div'); div.className = 'result-item';
+        div.innerHTML = '<div class="result-name">'+esc(p.name)+'</div><div class="result-meta">'+esc(p.projectName)+(p.jobTitle?' · '+esc(p.jobTitle):'')+'</div>';
+        div.addEventListener('click', function(){ signIn(p); });
+        resultsBox.appendChild(div);
       });
+      var nameVal = this.value.trim();
+      var newDiv = document.createElement('div'); newDiv.className = 'result-item';
+      newDiv.innerHTML = '<div class="result-name" style="color:#888">+ Not on the list?</div><div class="result-meta">Add yourself to a project</div>';
+      newDiv.addEventListener('click', function(){ startNewPerson(nameVal); });
+      resultsBox.appendChild(newDiv);
+      resultsBox.style.display = 'block';
+    });
 
-      // Close results on outside click
-      document.addEventListener('click', function(e) {
-        if (!document.getElementById('searchWrap').contains(e.target)) {
-          document.getElementById('results').style.display = 'none';
-        }
-      });
+    document.addEventListener('click', function(e) {
+      if (!document.getElementById('searchWrap').contains(e.target)) document.getElementById('results').style.display = 'none';
+    });
 
-      // ── Sign in existing person ──
-      function signIn(person) {
-        document.getElementById('results').style.display = 'none';
-        sessionStorage.setItem('visitorName', person.name);
-        sessionStorage.setItem('visitorProject', person.projectName);
-        sessionStorage.setItem('isNewVisitor', 'false');
-        fetch('/api/signin', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ personId: person.id, name: person.name, jobTitle: person.jobTitle, project: person.projectName })
-        }).then(function(r) { return r.json(); }).then(function(data) {
-          if (data.error) { document.getElementById('status').textContent = data.error; return; }
-          window.location.href = 'page4.html';
-        }).catch(function() {
-          document.getElementById('status').textContent = 'Could not sign in.';
+    function signIn(person) {
+      document.getElementById('results').style.display = 'none';
+      sessionStorage.setItem('visitorName', person.name);
+      sessionStorage.setItem('visitorProject', person.projectName);
+      sessionStorage.setItem('isNewVisitor', 'false');
+      fetch('/api/signin', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({personId:person.id, name:person.name, jobTitle:person.jobTitle, project:person.projectName}) })
+        .then(function(r){return r.json();}).then(function(data){ if(data.error){document.getElementById('status').textContent=data.error;return;} window.location.href='page4.html'; })
+        .catch(function(){ document.getElementById('status').textContent='Could not sign in.'; });
+    }
+
+    function startNewPerson(name) { document.getElementById('results').style.display='none'; document.getElementById('searchInput').value=name; showProjectPicker(); }
+
+    function showProjectPicker() {
+      selectedProject = null;
+      document.getElementById('newPersonForm').classList.remove('visible');
+      document.getElementById('projectPicker').classList.add('visible');
+      var list = document.getElementById('projectBtnList'); list.innerHTML = '';
+      if (peopleData && peopleData.projects) {
+        peopleData.projects.forEach(function(proj) {
+          var btn = document.createElement('button'); btn.className = 'proj-btn';
+          var count = (proj.people||[]).length;
+          var meta = proj.visitorProject ? 'Guest / visitor' : (count+' member'+(count!==1?'s':''));
+          btn.innerHTML = esc(proj.name)+'<div class="proj-meta">'+meta+'</div>';
+          btn.addEventListener('click', function(){ pickProject(proj); });
+          list.appendChild(btn);
         });
       }
+      sessionStorage.setItem('isNewVisitor','true');
+    }
 
-      // ── New person: show project picker ──
-      function startNewPerson(name) {
-        document.getElementById('results').style.display = 'none';
-        document.getElementById('searchInput').value = name;
-        showProjectPicker();
-      }
+    function pickProject(proj) {
+      selectedProject = proj;
+      document.getElementById('projectPicker').classList.remove('visible');
+      document.getElementById('newPersonForm').classList.add('visible');
+      document.getElementById('selectedProjectBadge').textContent = 'Adding to: '+proj.name;
+      document.getElementById('jobTitleInput').value = '';
+      document.getElementById('companyInput').value = '';
+      document.getElementById('companyRow').style.display = proj.visitorProject ? 'flex' : 'none';
+      document.getElementById('jobTitleInput').focus();
+    }
 
-      function showProjectPicker() {
-        selectedProject = null;
-        document.getElementById('newPersonForm').classList.remove('visible');
-        document.getElementById('projectPicker').classList.add('visible');
-
-        var list = document.getElementById('projectBtnList');
-        list.innerHTML = '';
-        if (peopleData && peopleData.projects) {
-          peopleData.projects.forEach(function(proj) {
-            var btn = document.createElement('button');
-            btn.className = 'proj-btn';
-            var count = (proj.people || []).length;
-            var meta = proj.visitorProject ? 'Guest / visitor' : (count + ' member' + (count !== 1 ? 's' : ''));
-            btn.innerHTML = esc(proj.name) + '<div class="proj-meta">' + meta + '</div>';
-            btn.addEventListener('click', function() { pickProject(proj); });
-            list.appendChild(btn);
-          });
-        }
-        sessionStorage.setItem('isNewVisitor', 'true');
-      }
-
-      function pickProject(proj) {
-        selectedProject = proj;
-        document.getElementById('projectPicker').classList.remove('visible');
-        document.getElementById('newPersonForm').classList.add('visible');
-        document.getElementById('selectedProjectBadge').textContent = 'Adding to: ' + proj.name;
-        document.getElementById('jobTitleInput').value = '';
-        document.getElementById('companyInput').value = '';
-        // Show company field only for visitor projects
-        document.getElementById('companyRow').style.display = proj.visitorProject ? 'flex' : 'none';
-        document.getElementById('jobTitleInput').focus();
-      }
-
-      // ── Confirm new person sign in ──
-      function confirmSignIn() {
-        var name = document.getElementById('searchInput').value.trim();
-        var jobTitle = document.getElementById('jobTitleInput').value.trim();
-        var company = document.getElementById('companyInput').value.trim();
-
-        if (!name) { document.getElementById('status').textContent = 'Please enter your name.'; return; }
-        if (!selectedProject) { document.getElementById('status').textContent = 'Please choose a project.'; return; }
-
-        var projectName = selectedProject.name;
-        var projectId = selectedProject.id;
-
-        document.getElementById('confirmBtn').textContent = 'Signing in...';
-
-        // Save to project then sign in
-        fetch('/api/people', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: name, jobTitle: jobTitle, company: company, projectId: projectId })
-        }).then(function() {
-          return fetch('/api/signin', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: name, jobTitle: jobTitle, project: projectName })
-          });
-        }).then(function(r) { return r.json(); }).then(function(data) {
-          if (data.error && data.error.indexOf('signed in') === -1) {
-            document.getElementById('status').textContent = data.error;
-            document.getElementById('confirmBtn').textContent = 'Sign In';
-            return;
-          }
-          sessionStorage.setItem('visitorName', name);
-          sessionStorage.setItem('visitorProject', projectName);
-          sessionStorage.setItem('isNewVisitor', 'true');
+    function confirmSignIn() {
+      var name = document.getElementById('searchInput').value.trim();
+      var jobTitle = document.getElementById('jobTitleInput').value.trim();
+      var company = document.getElementById('companyInput').value.trim();
+      if (!name) { document.getElementById('status').textContent='Please enter your name.'; return; }
+      if (!selectedProject) { document.getElementById('status').textContent='Please choose a project.'; return; }
+      document.getElementById('confirmBtn').textContent = 'Signing in...';
+      fetch('/api/people', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:name, jobTitle:jobTitle, company:company, projectId:selectedProject.id}) })
+        .then(function() { return fetch('/api/signin', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:name, jobTitle:jobTitle, project:selectedProject.name}) }); })
+        .then(function(r){return r.json();}).then(function(data){
+          if (data.error && data.error.indexOf('signed in')===-1) { document.getElementById('status').textContent=data.error; document.getElementById('confirmBtn').textContent='Sign In'; return; }
+          sessionStorage.setItem('visitorName', name); sessionStorage.setItem('visitorProject', selectedProject.name); sessionStorage.setItem('isNewVisitor','true');
           window.location.href = 'page4.html';
-        }).catch(function() {
-          document.getElementById('status').textContent = 'Could not sign in.';
-          document.getElementById('confirmBtn').textContent = 'Sign In';
-        });
-      }
+        }).catch(function(){ document.getElementById('status').textContent='Could not sign in.'; document.getElementById('confirmBtn').textContent='Sign In'; });
+    }
 
-      function esc(str) {
-        return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-      }
+    function esc(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 
-      document.getElementById('logo').onclick = function() { window.location.href = 'index.html'; };
-
-      // ── Weather ──
-      function loadWeather() {
-        fetch('https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
-          .then(function(r) { return r.json(); }).then(function(data) {
-            var temp = Math.round(data.current.temperature_2m);
-            var code = data.current.weathercode;
-            var sunrise = data.daily.sunrise[0].split('T')[1];
-            var sunset  = data.daily.sunset[0].split('T')[1];
-            var icons = {0:'&#x2600;',1:'&#x26C5;',2:'&#x26C5;',3:'&#x2601;',45:'&#x1F32B;',51:'&#x1F326;',61:'&#x1F327;',71:'&#x1F328;',80:'&#x1F327;',95:'&#x26C8;'};
-            var key = Object.keys(icons).reverse().find(function(k) { return code >= parseInt(k); }) || '0';
-            var el = document.getElementById('weatherTemp');
-            var ic = document.getElementById('weatherIcon');
-            var su = document.getElementById('weatherSun');
-            if (el) el.textContent = temp + '\u00b0C';
-            if (ic) ic.innerHTML = icons[key] || '&#x1F321;';
-            if (su) su.innerHTML = 'Rise ' + sunrise + '&nbsp;&nbsp;Set ' + sunset;
-          }).catch(function() {});
-      }
-      loadWeather();
-      setInterval(loadWeather, 600000);
-
-      function getDaySuffix(d) {
-        if (d >= 11 && d <= 13) return 'th';
-        switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
-      }
-      function updateClock() {
-        var now = new Date();
-        var dayName = now.toLocaleString('en-GB', { weekday: 'long' });
-        var day = now.getDate();
-        var month = now.toLocaleString('en-GB', { month: 'long' });
-        var time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-        var el = document.getElementById('clock');
-        if (el) el.innerHTML = dayName + ' ' + day + getDaySuffix(day) + ' ' + month + '<br>' + time;
-      }
-      setInterval(updateClock, 1000);
-      updateClock();
-
-      loadPeople();
-      document.getElementById('searchInput').focus();
-    </script>
-  </body>
+    document.getElementById('logo').onclick = function() { window.location.href='index.html'; };
+    loadPeople();
+    document.getElementById('searchInput').focus();
+  </script>
+</body>
 </html>

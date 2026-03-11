@@ -1,243 +1,205 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Versa Manchester</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <style>
-      @font-face { font-family: 'Brother1816'; src: url('brother1816-medium.otf') format('opentype'); }
-      #topBar {
-        display: flex; justify-content: space-between; align-items: flex-start;
-        padding: 20px 28px 0; flex-shrink: 0; width: 100%;
-      }
-      #centreLogoArea {
-        flex: 0 0 auto; display: flex; flex-direction: column;
-        align-items: center; justify-content: center;
-        width: 100%; padding: 24px 0 20px;
-      }
-      #centreLogo { width: 220px; display: block; }
-      #siteLabel { font-size: 13px; font-weight: bold; letter-spacing: 0.22em; color: #aaa; text-transform: uppercase; margin-top: 12px; text-align: center; font-family: Arial, sans-serif; }
-      #topRight { text-align: right; flex-shrink: 0; }
-      #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; white-space: nowrap; text-align: right; text-transform: none; font-family: Arial, sans-serif; }
-      #weatherBlock { margin-top: 4px; text-align: right; }
-      #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
-      #weatherIcon { font-size: 16px; }
-      #weatherTemp { font-size: 14px; font-weight: bold; color: #444; text-transform: none; font-family: Arial, sans-serif; }
-      #weatherSun  { font-size: 11px; color: #888; margin-top: 2px; text-align: right; text-transform: none; font-family: Arial, sans-serif; }
-      * { box-sizing: border-box; margin: 0; padding: 0; }
-      html, body { height: 100%; overflow: hidden; }
+<head>
+  <title>Versa Manchester</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
 
-      body {
-        background: #ffffff;
-        display: flex; flex-direction: column;
-        align-items: center; justify-content: flex-start;
-        height: 100vh;
-        font-family: 'Brother1816', Arial, sans-serif;
-      }
+    body {
+      background: #fff;
+      display: flex; flex-direction: column; align-items: center;
+      height: 100vh;
+      font-family: 'Bebas Neue', Arial, sans-serif;
+      padding: 0 max(24px, env(safe-area-inset-left));
+    }
 
-      /* ── Top bar ── */
-      #adminBtn:hover { opacity: 1; }
+    /* Top bar */
+    #topBar {
+      width: 100%; display: flex; justify-content: flex-end; align-items: flex-start;
+      padding: 20px 0 0; flex-shrink: 0;
+    }
+    #topRight { text-align: right; }
+    #clock {
+      font-size: 16px; font-weight: bold; line-height: 1.4;
+      color: #1a1a1a; text-align: right;
+      font-family: Arial, sans-serif; text-transform: none;
+    }
+    #weatherBlock { margin-top: 3px; text-align: right; }
+    #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+    #weatherIcon { font-size: 15px; font-family: Arial, sans-serif; }
+    #weatherTemp { font-size: 13px; font-weight: bold; color: #555; font-family: Arial, sans-serif; text-transform: none; }
+    #weatherSun  { font-size: 11px; color: #999; margin-top: 1px; font-family: Arial, sans-serif; text-transform: none; }
 
-      /* Clock + weather block */
+    /* Centre logo */
+    #centreLogoArea {
+      flex: 0 0 auto; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 20px 0 16px; width: 100%;
+    }
+    #centreLogo { width: 320px; display: block; }
+    #siteLabel {
+      font-size: 12px; font-weight: bold; letter-spacing: 0.22em;
+      color: #aaa; text-transform: uppercase; margin-top: 10px;
+      font-family: Arial, sans-serif;
+    }
 
-      /* ── Centre: Logo ── */
-      #logoWrap img { width: 100%; display: block; }
+    /* Buttons */
+    #buttons {
+      flex: 1; width: 100%; display: flex;
+      padding: 0 0 28px; gap: 20px;
+    }
+    .action-btn {
+      flex: 1; font-size: 72px; font-weight: bold;
+      border-radius: 24px; cursor: pointer; border: none;
+      font-family: 'Bebas Neue', Arial, sans-serif;
+      letter-spacing: 0.04em; background: #1a1a1a; color: #fff;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+      transition: transform 0.08s, box-shadow 0.08s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .action-btn:active { transform: scale(0.97); box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
 
-      /* ── Buttons ── */
-      #buttons {
-        width: 100%; display: flex;
-        padding: 0 28px 32px; gap: 24px;
-        flex: 1;
-      }
+    /* BG image */
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0;
+      background-image: url('studio-bw.jpg');
+      background-size: cover; background-position: center;
+      opacity: 0.10; pointer-events: none;
+    }
+    body > * { position: relative; z-index: 1; }
 
-      .action-btn {
-        flex: 1; font-size: 72px; font-weight: bold;
-        border-radius: 28px; cursor: pointer; border: none;
-        font-family: 'Brother1816', Arial, sans-serif;
-        letter-spacing: 0.04em; background: #1a1a1a; color: #ffffff;
-        box-shadow: 0 6px 24px rgba(0,0,0,0.18);
-        transition: transform 0.08s, box-shadow 0.08s;
-        -webkit-tap-highlight-color: transparent;
-        text-transform: uppercase;
-      }
-      .action-btn:active {
-        transform: scale(0.97);
-        box-shadow: 0 2px 10px rgba(0,0,0,0.12);
-      }
+    /* NFC feedback */
+    #nfcMsg {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #1a1a1a; color: #fff; padding: 12px 28px;
+      border-radius: 999px; font-size: 15px; font-family: Arial, sans-serif;
+      opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100;
+    }
+  </style>
+</head>
+<body>
 
-      /* ── Background image ── */
-      body::before {
-        content: '';
-        position: fixed; inset: 0; z-index: 0;
-        background-image: url('studio-bw.jpg');
-        background-size: cover;
-        background-position: center;
-        opacity: 0.10;
-        pointer-events: none;
-      }
-      /* Ensure all direct children sit above the bg */
-      body > * { position: relative; z-index: 1; }
-
-      /* ── Safe edge padding ── */
-      body { padding-left: max(24px, env(safe-area-inset-left));
-             padding-right: max(24px, env(safe-area-inset-right)); }
-    </style>
-  </head>
-  <body>
-
-    <div id="topBar">
-      <div></div>
-      <div id="topRight">
-        <div id="clock"></div>
-        <div id="weatherBlock">
-          <div id="weatherLine">
-            <span id="weatherIcon">&#x26C5;</span>
-            <span id="weatherTemp">&mdash;&deg;C</span>
-          </div>
-          <div id="weatherSun"></div>
+  <div id="topBar">
+    <div id="topRight">
+      <div id="clock"></div>
+      <div id="weatherBlock">
+        <div id="weatherLine">
+          <span id="weatherIcon"></span>
+          <span id="weatherTemp"></span>
         </div>
+        <div id="weatherSun"></div>
       </div>
     </div>
+  </div>
 
-    <div id="centreLogoArea">
-      <img id="centreLogo" src="Versa Logo.png" alt="Versa">
-      <div id="siteLabel">Manchester</div>
-    </div>
+  <div id="centreLogoArea">
+    <img id="centreLogo" src="Versa Logo.png" alt="Versa">
+    <div id="siteLabel">Manchester</div>
+  </div>
 
-    <div id="buttons">
-      <button class="action-btn" onclick="window.location.href='page2.html'">In</button>
-      <button class="action-btn" onclick="window.location.href='page3.html'">Out</button>
-    </div>
+  <div id="buttons">
+    <button class="action-btn" onclick="window.location.href='page2.html'">In</button>
+    <button class="action-btn" onclick="window.location.href='page3.html'">Out</button>
+  </div>
 
-    <script>
-      // ── NFC ──
-      async function startNFC() {
-        if (!('NDEFReader' in window)) return;
-        try {
-          const reader = new NDEFReader();
-          await reader.scan();
-          reader.onreading = async (event) => {
-            const nfcId = event.serialNumber;
-            if (!nfcId) return;
-            try {
-              const res = await fetch('/api/nfc-tap', {
-                method: 'POST', headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ nfcId })
-              });
-              const data = await res.json();
-              if (res.status === 404) { showNfcMsg('Card not recognised'); return; }
-              if (!res.ok) return;
-              sessionStorage.setItem('visitorName', data.name);
-              window.location.href = data.action === 'signin' ? 'page4.html' : 'page5.html';
-            } catch (e) { showNfcMsg('Could not reach server'); }
-          };
-        } catch (e) {}
-      }
+  <div id="nfcMsg"></div>
 
-      function showNfcMsg(msg) {
-        let el = document.getElementById('nfcMsg');
-        if (!el) {
-          el = document.createElement('div');
-          el.id = 'nfcMsg';
-          el.style.cssText = 'position:fixed;bottom:40px;left:50%;transform:translateX(-50%);background:#1a1a1a;color:white;padding:14px 28px;border-radius:12px;font-size:18px;font-family:Brother1816,Arial,sans-serif;letter-spacing:0.04em;z-index:999;transition:opacity 0.4s';
-          document.body.appendChild(el);
-        }
-        el.textContent = msg; el.style.opacity = '1';
-        clearTimeout(el._t);
-        el._t = setTimeout(() => el.style.opacity = '0', 2500);
-      }
+  <script>
+    // ── Clock ──
+    function getDaySuffix(d) {
+      if (d >= 11 && d <= 13) return 'th';
+      switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
+    }
+    function updateClock() {
+      var now = new Date();
+      var day = now.getDate();
+      var el = document.getElementById('clock');
+      if (!el) return;
+      el.innerHTML =
+        now.toLocaleString('en-GB', { weekday: 'long' }) + ' ' +
+        day + getDaySuffix(day) + ' ' +
+        now.toLocaleString('en-GB', { month: 'long' }) + '<br>' +
+        now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
+    }
+    setInterval(updateClock, 1000); updateClock();
 
-      startNFC();
+    // ── Weather ──
+    function loadWeather() {
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
+        .then(function(r) { return r.json(); }).then(function(d) {
+          var icons = {0:'☀️',1:'⛅',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',61:'🌧️',71:'🌨️',80:'🌧️',95:'⛈️'};
+          var key = Object.keys(icons).reverse().find(function(k) { return d.current.weathercode >= +k; }) || '0';
+          document.getElementById('weatherTemp').textContent = Math.round(d.current.temperature_2m) + '°C';
+          document.getElementById('weatherIcon').textContent = icons[key];
+          document.getElementById('weatherSun').textContent =
+            'Rise ' + d.daily.sunrise[0].split('T')[1] + '  Set ' + d.daily.sunset[0].split('T')[1];
+        }).catch(function() {});
+    }
+    loadWeather(); setInterval(loadWeather, 600000);
 
-      // ── Weather (Open-Meteo, free, no key needed) ──
-      // Manchester: lat 53.4808, lon -2.2426
-      async function loadWeather() {
-        try {
-          const lat = 53.4808, lon = -2.2426;
-          const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1`;
-          const res = await fetch(url);
-          const data = await res.json();
-
-          const temp = Math.round(data.current.temperature_2m);
-          const code = data.current.weathercode;
-          const sunrise = data.daily.sunrise[0].split('T')[1];
-          const sunset  = data.daily.sunset[0].split('T')[1];
-
-          document.getElementById('weatherIcon').textContent = weatherIcon(code);
-          document.getElementById('weatherTemp').textContent = temp + '\u00b0C';
-          document.getElementById('weatherSun').textContent = 'Rise ' + sunrise + '  Set ' + sunset;
-        } catch (e) {
-          document.getElementById('weatherTemp').textContent = '';
-          document.getElementById('weatherIcon').textContent = '';
-        }
-      }
-
-      function weatherIcon(code) {
-        if (code === 0) return '☀️';
-        if (code <= 2) return '⛅';
-        if (code <= 3) return '☁️';
-        if (code <= 49) return '🌫️';
-        if (code <= 59) return '🌦️';
-        if (code <= 69) return '🌧️';
-        if (code <= 79) return '🌨️';
-        if (code <= 84) return '🌧️';
-        if (code <= 99) return '⛈️';
-        return '🌡️';
-      }
-
-      loadWeather();
-      setInterval(loadWeather, 10 * 60 * 1000); // refresh every 10 mins
-
-      // ── Auto sign out at midnight (non-ShopOn) and 6am (ShopOn) ──
-      function scheduleAutoSignout() {
-        const now = new Date();
-
-        // Midnight signout
-        const midnight = new Date(now);
-        midnight.setHours(24, 0, 10, 0);
-        setTimeout(async () => {
-          await autoSignout(false);
-          scheduleAutoSignout();
-        }, midnight - now);
-
-        // 6am signout for ShopOn
-        const sixAm = new Date(now);
-        sixAm.setHours(6, 0, 10, 0);
-        if (sixAm <= now) sixAm.setDate(sixAm.getDate() + 1);
-        setTimeout(() => autoSignout(true), sixAm - now);
-      }
-
-      async function autoSignout(shopOnOnly) {
-        try {
-          const res = await fetch('/api/visitors');
-          const visitors = await res.json();
-          for (const v of visitors) {
-            const isShopOn = v.project && v.project.toLowerCase().includes('shopon');
-            if (shopOnOnly && !isShopOn) continue;
-            if (!shopOnOnly && isShopOn) continue;
-            await fetch('/api/signout', {
-              method: 'POST', headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name: v.name })
+    // ── NFC ──
+    function showMsg(msg) {
+      var el = document.getElementById('nfcMsg');
+      el.textContent = msg; el.style.opacity = '1';
+      clearTimeout(el._t);
+      el._t = setTimeout(function() { el.style.opacity = '0'; }, 2500);
+    }
+    async function startNFC() {
+      if (!('NDEFReader' in window)) return;
+      try {
+        var reader = new NDEFReader();
+        await reader.scan();
+        reader.onreading = async function(e) {
+          var nfcId = e.serialNumber;
+          try {
+            var r = await fetch('/api/nfc-tap', {
+              method: 'POST', headers: {'Content-Type':'application/json'},
+              body: JSON.stringify({ nfcId: nfcId })
             });
-          }
-        } catch (e) {}
-      }
+            var data = await r.json();
+            if (data.error) { showMsg(data.error); return; }
+            sessionStorage.setItem('visitorName', data.name);
+            sessionStorage.setItem('isNewVisitor', 'false');
+            if (data.action === 'signin') window.location.href = 'page4.html';
+            else window.location.href = 'page5.html';
+          } catch(err) { showMsg('NFC error'); }
+        };
+      } catch(err) {}
+    }
+    startNFC();
 
-      scheduleAutoSignout();
-      function getDaySuffix(d) {
-        if (d >= 11 && d <= 13) return 'th';
-        switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
-      }
-      function updateClock() {
-        var now = new Date();
-        var dayName = now.toLocaleString('en-GB', { weekday: 'long' });
-        var day = now.getDate();
-        var month = now.toLocaleString('en-GB', { month: 'long' });
-        var time = now.toLocaleString('en-GB', { hour: 'numeric', minute: '2-digit', hour12: true }).toLowerCase();
-        var el = document.getElementById('clock');
-        if (el) el.innerHTML = dayName + ' ' + day + getDaySuffix(day) + ' ' + month + '<br>' + time;
-      }
-      setInterval(updateClock, 1000);
-      updateClock();
-    </script>
-  </body>
+    // ── Auto sign out at midnight / 6am ──
+    function scheduleAutoSignout() {
+      var now = new Date();
+      var midnight = new Date(now); midnight.setHours(24, 0, 10, 0);
+      setTimeout(async function() {
+        try {
+          var r = await fetch('/api/visitors');
+          var visitors = await r.json();
+          for (var v of visitors) {
+            var isShopOn = v.project && v.project.toLowerCase().includes('shopon');
+            if (!isShopOn) await fetch('/api/signout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:v.name}) });
+          }
+        } catch(e) {}
+        scheduleAutoSignout();
+      }, midnight - now);
+      var sixAm = new Date(now); sixAm.setHours(6, 0, 10, 0);
+      if (sixAm <= now) sixAm.setDate(sixAm.getDate() + 1);
+      setTimeout(async function() {
+        try {
+          var r = await fetch('/api/visitors');
+          var visitors = await r.json();
+          for (var v of visitors) {
+            var isShopOn = v.project && v.project.toLowerCase().includes('shopon');
+            if (isShopOn) await fetch('/api/signout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:v.name}) });
+          }
+        } catch(e) {}
+      }, sixAm - now);
+    }
+    scheduleAutoSignout();
+  </script>
+</body>
 </html>
