@@ -1,13 +1,17 @@
 {
-  "name": "versa-signin",
+  "name": "versa-manchester",
   "version": "1.0.0",
-  "description": "Versa Sign In / Sign Out system",
+  "description": "Versa Manchester Sign-in System",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "socket.io": "^4.7.2"
+    "socket.io": "^4.6.1",
+    "@supabase/supabase-js": "^2.39.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
 }
