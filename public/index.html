@@ -77,9 +77,9 @@
       padding: 20px 0 0; flex-shrink: 0;
     }
     #centreLogoArea {
-      display: flex; flex-direction: column;
+      flex: 1; display: flex; flex-direction: column;
       align-items: center; justify-content: center;
-      position: absolute; left: 50%; transform: translateX(-50%);
+      width: 100%;
     }
     #centreLogo { width: 260px; display: block; }
     #siteLabel {
@@ -87,7 +87,7 @@
       color: #aaa; text-transform: uppercase; margin-top: 8px;
       font-family: Arial, sans-serif; text-align: center;
     }
-    #homeButtons { flex: 0 0 auto; width: 100%; display: flex; padding: 0 0 28px; gap: 20px; height: 220px; margin-top: 20px; }
+    #homeButtons { flex: 0 0 auto; width: 100%; display: flex; padding: 0 0 28px; gap: 20px; height: 200px; }
     .action-btn {
       flex: 1; font-size: 48px; font-weight: bold;
       border-radius: 24px; cursor: pointer; border: none;
