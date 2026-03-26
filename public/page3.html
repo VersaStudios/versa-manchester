@@ -68,22 +68,28 @@
   <script>
     var currentVisitors = [];
 
-    function getDaySuffix(d) {
+function getDaySuffix(d) {
       if (d >= 11 && d <= 13) return 'th';
       switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
     }
     function updateClock() {
       var now = new Date(); var day = now.getDate();
       var el = document.getElementById('clock'); if (!el) return;
-      el.innerHTML = now.toLocaleString('en-GB',{weekday:'long'}) + ' ' + day + getDaySuffix(day) + ' ' + now.toLocaleString('en-GB',{month:'long'}) + '<br>' + now.toLocaleString('en-GB',{hour:'numeric',minute:'2-digit',hour12:true}).toLowerCase();
+      var line1 = now.toLocaleString('en-GB',{weekday:'long'}) + ' ' + day + getDaySuffix(day) + ' ' + now.toLocaleString('en-GB',{month:'long'});
+      var line2 = now.toLocaleString('en-GB',{hour:'numeric',minute:'2-digit',hour12:true}).toLowerCase();
+      el.innerHTML = '<span style="display:block;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;color:#1a1a1a;text-transform:none;letter-spacing:normal;line-height:1.4;text-align:right;">' + line1 + '</span><span style="display:block;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;color:#1a1a1a;text-transform:none;letter-spacing:normal;line-height:1.4;text-align:right;">' + line2 + '</span>';
     }
     setInterval(updateClock, 1000); updateClock();
 
-    function loadWeather() {
+function loadWeather() {
       fetch('https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
         .then(function(r){return r.json();}).then(function(d){
           var icons={0:'☀️',1:'⛅',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',61:'🌧️',71:'🌨️',80:'🌧️',95:'⛈️'};
           var key=Object.keys(icons).reverse().find(function(k){return d.current.weathercode>=+k;})||'0';
+          var s='font-family:Arial,sans-serif;text-transform:none;letter-spacing:normal;';
+          document.getElementById('weatherTemp').setAttribute('style',s+'font-size:13px;font-weight:bold;color:#555;');
+          document.getElementById('weatherIcon').setAttribute('style',s+'font-size:15px;');
+          document.getElementById('weatherSun').setAttribute('style',s+'font-size:11px;color:#999;margin-top:1px;display:block;text-align:right;');
           document.getElementById('weatherTemp').textContent=Math.round(d.current.temperature_2m)+'°C';
           document.getElementById('weatherIcon').textContent=icons[key];
           document.getElementById('weatherSun').textContent='Rise '+d.daily.sunrise[0].split('T')[1]+'  Set '+d.daily.sunset[0].split('T')[1];
