@@ -23,6 +23,44 @@ const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
+// ── In-memory cache ──────────────────────────────────────────
+let _peopleCache = null;
+let _visitorsCache = null;
+
+async function getPeopleData(activeOnly = false) {
+  if (!_peopleCache) {
+    let q = supabase.from('projects').select('*, people(*)').eq('site', SITE);
+    const { data, error } = await q;
+    if (error) throw error;
+    _peopleCache = data.map(p => ({
+      id: p.id, name: p.name, visitorProject: p.visitor_project,
+      suspended: p.suspended,
+      people: (p.people || []).map(person => ({
+        id: person.id, name: person.name, jobTitle: person.job_title,
+        company: person.company, nfcId: person.nfc_id, addedAt: person.added_at
+      }))
+    }));
+  }
+  const projects = activeOnly ? _peopleCache.filter(p => !p.suspended) : _peopleCache;
+  return { projects };
+}
+
+function invalidatePeopleCache() { _peopleCache = null; }
+
+async function getCurrentVisitors() {
+  if (_visitorsCache) return _visitorsCache;
+  const { data, error } = await supabase.from('visitors')
+    .select('*').eq('site', SITE).is('time_out', null);
+  if (error) throw error;
+  _visitorsCache = data.map(v => ({
+    id: v.id, personId: v.person_id, name: v.name,
+    jobTitle: v.job_title, project: v.project, timeIn: v.time_in
+  }));
+  return _visitorsCache;
+}
+
+function invalidateVisitorsCache() { _visitorsCache = null; }
+
 // ── Default people (first run) ───────────────────────────────
 async function seedDefaultPeople() {
   const { data } = await supabase.from('projects').select('id').eq('site', SITE).limit(1);
@@ -36,7 +74,7 @@ async function seedDefaultPeople() {
     { id: 'silverscape-mcr',     site: SITE, name: 'Silverscape',          visitor_project: false },
     { id: 'visitor-mcr',         site: SITE, name: 'Visitor',              visitor_project: true  },
   ];
-  await supabase.from('projects').insert(projects);
+  await supabase.from('projects').insert(projects); invalidatePeopleCache();
 
   const people = [
     { id: uid(), project_id: 'versa-staff-mcr', name: 'Andrew Rowell',  job_title: 'Technical Manager' },
@@ -53,39 +91,10 @@ async function seedDefaultPeople() {
     { id: uid(), project_id: 'versa-freelance-mcr', name: 'Oliver Riches',   job_title: 'Technical Manager' },
     { id: uid(), project_id: 'shopon-tv-mcr',    name: 'Rob Locke', job_title: 'Head of Television / Presenter' },
   ];
-  await supabase.from('people').insert(people);
+  await supabase.from('people').insert(people); invalidatePeopleCache();
   console.log('Seeded default people for Manchester');
 }
 seedDefaultPeople().catch(console.error);
-
-// ── Helper: build peopleData structure ──────────────────────
-async function getPeopleData(activeOnly = false) {
-  let projQuery = supabase.from('projects').select('*, people(*)').eq('site', SITE);
-  if (activeOnly) projQuery = projQuery.eq('suspended', false);
-  const { data, error } = await projQuery;
-  if (error) throw error;
-  return {
-    projects: data.map(p => ({
-      id: p.id, name: p.name, visitorProject: p.visitor_project,
-      suspended: p.suspended,
-      people: (p.people || []).map(person => ({
-        id: person.id, name: person.name, jobTitle: person.job_title,
-        company: person.company, nfcId: person.nfc_id, addedAt: person.added_at
-      }))
-    }))
-  };
-}
-
-// ── Helper: get current visitors ────────────────────────────
-async function getCurrentVisitors() {
-  const { data, error } = await supabase.from('visitors')
-    .select('*').eq('site', SITE).is('time_out', null);
-  if (error) throw error;
-  return data.map(v => ({
-    id: v.id, personId: v.person_id, name: v.name,
-    jobTitle: v.job_title, project: v.project, timeIn: v.time_in
-  }));
-}
 
 // ── Helper: get today's history ─────────────────────────────
 async function getTodayHistory() {
@@ -119,12 +128,12 @@ app.post('/api/people', async (req, res) => {
   if (!proj) return res.status(404).json({ error: 'Project not found' });
 
   const person = { id: uid(), project_id: projectId, name, job_title: proj.visitor_project ? '' : (jobTitle||''), company: proj.visitor_project ? (company||'') : '', added_at: new Date().toISOString() };
-  await supabase.from('people').insert(person);
+  await supabase.from('people').insert(person); invalidatePeopleCache();
   res.json({ success: true, person: { id: person.id, name, jobTitle: person.job_title }, projectName: proj.name });
 });
 
 app.delete('/api/people/:personId', async (req, res) => {
-  const { error } = await supabase.from('people').delete().eq('id', req.params.personId);
+  const { error } = await supabase.from('people').delete().eq('id', req.params.personId); invalidatePeopleCache();
   if (error) return res.status(500).json({ error: error.message });
   res.json({ success: true });
 });
@@ -132,7 +141,7 @@ app.delete('/api/people/:personId', async (req, res) => {
 app.put('/api/people/:personId', async (req, res) => {
   const { name, jobTitle } = req.body;
   if (!name) return res.status(400).json({ error: 'Name required' });
-  await supabase.from('people').update({ name, job_title: jobTitle||'' }).eq('id', req.params.personId);
+  await supabase.from('people').update({ name, job_title: jobTitle||'' }).eq('id', req.params.personId); invalidatePeopleCache();
   const peopleData = await getPeopleData();
   io.emit('people-update', peopleData);
   res.json({ success: true });
@@ -144,12 +153,12 @@ app.put('/api/people/:personId/nfc', async (req, res) => {
   const { data: existing } = await supabase.from('people').select('id, name').eq('nfc_id', nfcId).limit(1);
   if (existing && existing.length > 0 && existing[0].id !== req.params.personId)
     return res.status(409).json({ error: `Card already assigned to ${existing[0].name}` });
-  await supabase.from('people').update({ nfc_id: nfcId }).eq('id', req.params.personId);
+  await supabase.from('people').update({ nfc_id: nfcId }).eq('id', req.params.personId); invalidatePeopleCache();
   res.json({ success: true });
 });
 
 app.delete('/api/people/:personId/nfc', async (req, res) => {
-  await supabase.from('people').update({ nfc_id: null }).eq('id', req.params.personId);
+  await supabase.from('people').update({ nfc_id: null }).eq('id', req.params.personId); invalidatePeopleCache();
   res.json({ success: true });
 });
 
@@ -165,7 +174,7 @@ app.post('/api/projects', async (req, res) => {
 });
 
 app.delete('/api/projects/:projectId', async (req, res) => {
-  await supabase.from('projects').delete().eq('id', req.params.projectId);
+  await supabase.from('projects').delete().eq('id', req.params.projectId); invalidatePeopleCache();
   res.json({ success: true });
 });
 
@@ -173,7 +182,7 @@ app.put('/api/projects/:projectId/suspend', async (req, res) => {
   const { data: proj } = await supabase.from('projects').select('suspended').eq('id', req.params.projectId).single();
   if (!proj) return res.status(404).json({ error: 'Project not found' });
   const suspended = !proj.suspended;
-  await supabase.from('projects').update({ suspended }).eq('id', req.params.projectId);
+  await supabase.from('projects').update({ suspended }).eq('id', req.params.projectId); invalidatePeopleCache();
   const peopleData = await getPeopleData();
   io.emit('people-update', peopleData);
   res.json({ success: true, suspended });
@@ -225,7 +234,7 @@ app.post('/api/signin', async (req, res) => {
   }
   res.json({ success: true, visitor });
   // Emit update in background - don't block the response
-  getCurrentVisitors().then(v => io.emit('update', v)).catch(()=>{});
+  invalidateVisitorsCache(); getCurrentVisitors().then(v => io.emit('update', v)).catch(()=>{});
 });
 
 app.post('/api/signout', async (req, res) => {
@@ -236,7 +245,7 @@ app.post('/api/signout', async (req, res) => {
   await supabase.from('visitors').update({ time_out: new Date().toISOString() }).eq('id', data[0].id);
   res.json({ success: true });
   // Emit update in background
-  getCurrentVisitors().then(v => io.emit('update', v)).catch(()=>{});
+  invalidateVisitorsCache(); getCurrentVisitors().then(v => io.emit('update', v)).catch(()=>{});
 });
 
 app.delete('/api/clear', async (req, res) => {
