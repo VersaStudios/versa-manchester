@@ -83,7 +83,7 @@
       <div id="results"></div>
     </div>
     <div id="projectPicker">
-      <div id="projectPickerLabel">Choose your project or team</div>
+      <div id="projectPickerLabel">Sign in as a visitor</div>
       <div id="projectBtnList"></div>
     </div>
     <div id="newPersonForm">
@@ -204,11 +204,11 @@
       document.getElementById('projectPicker').classList.add('visible');
       var list = document.getElementById('projectBtnList'); list.innerHTML = '';
       if (peopleData && peopleData.projects) {
-        peopleData.projects.forEach(function(proj) {
+        // Only show visitor projects in the "not on list" picker
+        var visitorProjects = peopleData.projects.filter(function(p) { return p.visitorProject; });
+        visitorProjects.forEach(function(proj) {
           var btn = document.createElement('button'); btn.className = 'proj-btn';
-          var count = (proj.people||[]).length;
-          var meta = proj.visitorProject ? 'Guest / visitor' : (count+' member'+(count!==1?'s':''));
-          btn.innerHTML = esc(proj.name)+'<div class="proj-meta">'+meta+'</div>';
+          btn.innerHTML = esc(proj.name)+'<div class="proj-meta">Guest / visitor</div>';
           btn.addEventListener('click', function(){ pickProject(proj); });
           list.appendChild(btn);
         });
