@@ -217,12 +217,15 @@ app.get('/api/history/person/:name', async (req, res) => {
 app.post('/api/signin', async (req, res) => {
   const { personId, name, jobTitle, project } = req.body;
   if (!name) return res.status(400).json({ error: 'Name required' });
-  const { data: existing } = await supabase.from('visitors').select('id').eq('site', SITE).ilike('name', name).is('time_out', null).limit(1);
-  if (existing && existing.length > 0) return res.status(409).json({ error: 'Already signed in' });
   const visitor = { id: uid(), site: SITE, person_id: personId||null, name, job_title: jobTitle||'', project: project||'', time_in: new Date().toISOString() };
-  await supabase.from('visitors').insert(visitor);
-  io.emit('update', await getCurrentVisitors());
+  const { error } = await supabase.from('visitors').insert(visitor);
+  if (error) {
+    if (error.code === '23505') return res.status(409).json({ error: 'Already signed in' });
+    return res.status(500).json({ error: error.message });
+  }
   res.json({ success: true, visitor });
+  // Emit update in background - don't block the response
+  getCurrentVisitors().then(v => io.emit('update', v)).catch(()=>{});
 });
 
 app.post('/api/signout', async (req, res) => {
@@ -231,8 +234,9 @@ app.post('/api/signout', async (req, res) => {
   const { data } = await supabase.from('visitors').select('id').eq('site', SITE).ilike('name', name).is('time_out', null).limit(1);
   if (!data || data.length === 0) return res.status(404).json({ error: 'Not signed in' });
   await supabase.from('visitors').update({ time_out: new Date().toISOString() }).eq('id', data[0].id);
-  io.emit('update', await getCurrentVisitors());
   res.json({ success: true });
+  // Emit update in background
+  getCurrentVisitors().then(v => io.emit('update', v)).catch(()=>{});
 });
 
 app.delete('/api/clear', async (req, res) => {
