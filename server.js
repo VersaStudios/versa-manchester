@@ -117,11 +117,7 @@ app.post('/api/people', async (req, res) => {
   if (!name || !projectId) return res.status(400).json({ error: 'Name and projectId required' });
   const { data: proj } = await supabase.from('projects').select('*').eq('id', projectId).single();
   if (!proj) return res.status(404).json({ error: 'Project not found' });
-  if (!proj.visitor_project) {
-    const { data: existing } = await supabase.from('people')
-      .select('id').ilike('name', name).limit(1);
-    if (existing && existing.length > 0) return res.status(409).json({ error: 'Name already exists' });
-  }
+
   const person = { id: uid(), project_id: projectId, name, job_title: proj.visitor_project ? '' : (jobTitle||''), company: proj.visitor_project ? (company||'') : '', added_at: new Date().toISOString() };
   await supabase.from('people').insert(person);
   res.json({ success: true, person: { id: person.id, name, jobTitle: person.job_title }, projectName: proj.name });
@@ -130,6 +126,15 @@ app.post('/api/people', async (req, res) => {
 app.delete('/api/people/:personId', async (req, res) => {
   const { error } = await supabase.from('people').delete().eq('id', req.params.personId);
   if (error) return res.status(500).json({ error: error.message });
+  res.json({ success: true });
+});
+
+app.put('/api/people/:personId', async (req, res) => {
+  const { name, jobTitle } = req.body;
+  if (!name) return res.status(400).json({ error: 'Name required' });
+  await supabase.from('people').update({ name, job_title: jobTitle||'' }).eq('id', req.params.personId);
+  const peopleData = await getPeopleData();
+  io.emit('people-update', peopleData);
   res.json({ success: true });
 });
 
