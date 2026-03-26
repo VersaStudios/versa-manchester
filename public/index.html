@@ -87,7 +87,7 @@
       color: #aaa; text-transform: uppercase; margin-top: 8px;
       font-family: Arial, sans-serif; text-align: center;
     }
-    #homeButtons { flex: 1; width: 100%; display: flex; padding: 0 0 28px; gap: 20px; }
+    #homeButtons { flex: 0 0 auto; width: 100%; display: flex; padding: 0 0 28px; gap: 20px; height: 220px; margin-top: 20px; }
     .action-btn {
       flex: 1; font-size: 48px; font-weight: bold;
       border-radius: 24px; cursor: pointer; border: none;
@@ -337,12 +337,13 @@
   }
   function updateClock() {
     var now = new Date(); var day = now.getDate();
-    var str = now.toLocaleString('en-GB',{weekday:'long'}) + ' ' + day + getDaySuffix(day) + ' ' +
-              now.toLocaleString('en-GB',{month:'long'}) + '<br>' +
-              now.toLocaleString('en-GB',{hour:'numeric',minute:'2-digit',hour12:true}).toLowerCase();
+    var line1 = now.toLocaleString('en-GB',{weekday:'long'}) + ' ' + day + getDaySuffix(day) + ' ' + now.toLocaleString('en-GB',{month:'long'});
+    var line2 = now.toLocaleString('en-GB',{hour:'numeric',minute:'2-digit',hour12:true}).toLowerCase();
+    var html = '<span style="display:block;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;color:#1a1a1a;text-transform:none;letter-spacing:normal;line-height:1.4;text-align:right;">' + line1 + '</span>' +
+               '<span style="display:block;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;color:#1a1a1a;text-transform:none;letter-spacing:normal;line-height:1.4;text-align:right;">' + line2 + '</span>';
     for (var i = 1; i <= 5; i++) {
       var el = document.getElementById('clock' + (i === 1 ? '' : i));
-      if (el) el.innerHTML = str;
+      if (el) el.innerHTML = html;
     }
   }
   setInterval(updateClock, 1000); updateClock();
