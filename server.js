@@ -226,26 +226,30 @@ app.get('/api/history/person/:name', async (req, res) => {
 app.post('/api/signin', async (req, res) => {
   const { personId, name, jobTitle, project } = req.body;
   if (!name) return res.status(400).json({ error: 'Name required' });
+  // Check cache first — fast, no DB round trip
+  const current = await getCurrentVisitors();
+  const alreadyIn = current.find(v => v.name.toLowerCase() === name.toLowerCase());
+  if (alreadyIn) return res.status(409).json({ error: 'Already signed in' });
   const visitor = { id: uid(), site: SITE, person_id: personId||null, name, job_title: jobTitle||'', project: project||'', time_in: new Date().toISOString() };
-  const { error } = await supabase.from('visitors').insert(visitor);
-  if (error) {
-    if (error.code === '23505') return res.status(409).json({ error: 'Already signed in' });
-    return res.status(500).json({ error: error.message });
-  }
+  await supabase.from('visitors').insert(visitor);
+  // Update cache directly without re-fetching
+  if (_visitorsCache) _visitorsCache.push({ id: visitor.id, personId: visitor.person_id, name: visitor.name, jobTitle: visitor.job_title, project: visitor.project, timeIn: visitor.time_in });
+  io.emit('update', _visitorsCache || []);
   res.json({ success: true, visitor });
-  // Emit update in background - don't block the response
-  invalidateVisitorsCache(); getCurrentVisitors().then(v => io.emit('update', v)).catch(()=>{});
 });
 
 app.post('/api/signout', async (req, res) => {
   const { name } = req.body;
   if (!name) return res.status(400).json({ error: 'Name required' });
-  const { data } = await supabase.from('visitors').select('id').eq('site', SITE).ilike('name', name).is('time_out', null).limit(1);
-  if (!data || data.length === 0) return res.status(404).json({ error: 'Not signed in' });
-  await supabase.from('visitors').update({ time_out: new Date().toISOString() }).eq('id', data[0].id);
+  // Find in cache first
+  const current = await getCurrentVisitors();
+  const visitor = current.find(v => v.name.toLowerCase() === name.toLowerCase());
+  if (!visitor) return res.status(404).json({ error: 'Not signed in' });
+  await supabase.from('visitors').update({ time_out: new Date().toISOString() }).eq('id', visitor.id);
+  // Update cache directly
+  if (_visitorsCache) _visitorsCache = _visitorsCache.filter(v => v.id !== visitor.id);
+  io.emit('update', _visitorsCache || []);
   res.json({ success: true });
-  // Emit update in background
-  invalidateVisitorsCache(); getCurrentVisitors().then(v => io.emit('update', v)).catch(()=>{});
 });
 
 app.delete('/api/clear', async (req, res) => {
