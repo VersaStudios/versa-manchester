@@ -228,7 +228,7 @@
   <div id="s2searchArea">
     <div id="s2searchWrap">
       <input id="s2input" type="text" placeholder="Type your name..."
-             autocomplete="off" autocorrect="off" autocapitalize="words" inputmode="text">
+             autocomplete="new-password" autocorrect="off" autocapitalize="words" inputmode="text" name="search_person">
       <div id="s2results"></div>
     </div>
     <div id="s2projectPicker">
@@ -268,7 +268,7 @@
   <div id="s3searchArea">
     <div id="s3searchWrap">
       <input id="s3input" type="text" placeholder="Type your name..."
-             autocomplete="off" autocorrect="off" autocapitalize="words" inputmode="text">
+             autocomplete="new-password" autocorrect="off" autocapitalize="words" inputmode="text" name="search_signout">
       <div id="s3results"></div>
     </div>
     <div id="s3status"></div>
@@ -522,22 +522,16 @@
       document.getElementById('s3results').style.display = 'none';
   });
 
-  async function signIn(person) {
+  function signIn(person) {
     document.getElementById('s2results').style.display = 'none';
-    // Refresh visitors list then check
-    try {
-      var r = await fetch('/api/visitors');
-      currentVisitors = await r.json();
-    } catch(e) {}
+    // Check against cached list - fast, no delay
     var alreadyIn = currentVisitors.find(function(v){ return v.name.toLowerCase() === person.name.toLowerCase(); });
     if (alreadyIn) {
       document.getElementById('s2status').textContent = person.name + ' is already signed in.';
       document.getElementById('s2status').style.color = '#c00';
       return;
     }
-    // Show welcome screen immediately
     showWelcome(person.name, false);
-    // Sign in in background
     fetch('/api/signin', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({personId:person.id, name:person.name, jobTitle:person.jobTitle, project:person.projectName})
     }).catch(function(){});
