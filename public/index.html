@@ -418,20 +418,33 @@
     }, 1000);
   }
 
+  var _inactivityReset = null;
   function startInactivityTimer(barId, seconds, onDone) {
+    // Remove previous listener if any
+    if (_inactivityReset) {
+      document.removeEventListener('touchstart', _inactivityReset);
+      document.removeEventListener('click', _inactivityReset);
+      _inactivityReset = null;
+    }
     var timeLeft = seconds;
     var bar = document.getElementById(barId);
     if (bar) bar.style.transform = 'scaleX(1)';
-    function reset() {
+    _inactivityReset = function() {
       timeLeft = seconds;
       if (bar) bar.style.transform = 'scaleX(1)';
-    }
-    document.addEventListener('touchstart', reset);
-    document.addEventListener('click', reset);
+    };
+    document.addEventListener('touchstart', _inactivityReset);
+    document.addEventListener('click', _inactivityReset);
     timerInterval = setInterval(function() {
       timeLeft--;
       if (bar) bar.style.transform = 'scaleX(' + (timeLeft / seconds) + ')';
-      if (timeLeft <= 0) { clearInterval(timerInterval); timerInterval = null; onDone(); }
+      if (timeLeft <= 0) {
+        clearInterval(timerInterval); timerInterval = null;
+        document.removeEventListener('touchstart', _inactivityReset);
+        document.removeEventListener('click', _inactivityReset);
+        _inactivityReset = null;
+        onDone();
+      }
     }, 1000);
   }
 
