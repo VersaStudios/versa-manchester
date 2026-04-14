@@ -49,6 +49,10 @@
     #confirmBtn { padding: 16px; font-size: 20px; font-weight: bold; border-radius: 14px; cursor: pointer; border: none; background: #1a1a1a; color: white; font-family: inherit; letter-spacing: 0.04em; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
     #status { font-size: 14px; color: #c00; min-height: 1.2em; padding: 0 4px; flex-shrink: 0; font-family: Arial, sans-serif; text-transform: none; }
     #timerBar { position: fixed; bottom: 0; left: 0; height: 4px; background: #1a1a1a; width: 100%; transform-origin: left; transition: transform 1s linear; }
+    /* Hide heading when keyboard appears */
+    @media (max-height: 500px) {
+      #heading { display: none !important; }
+    }
     body::before { content: ''; position: fixed; inset: 0; z-index: 0; background-image: url('studio-bw.jpg'); background-size: cover; background-position: center; opacity: 0.10; pointer-events: none; }
     body > * { position: relative; z-index: 1; }
   </style>
@@ -232,6 +236,16 @@ function loadWeather() {
     }
 
     function esc(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+    // Hide heading when keyboard appears
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', function() {
+        var heading = document.getElementById('heading');
+        if (!heading) return;
+        heading.style.display = window.visualViewport.height < window.screen.height * 0.75 ? 'none' : '';
+      });
+    }
+
     document.getElementById('logo').onclick = function() { window.location.href='index.html'; };
     loadPeople();
     document.getElementById('searchInput').focus();

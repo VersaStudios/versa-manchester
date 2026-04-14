@@ -112,6 +112,23 @@ async function getTodayHistory() {
   }));
 }
 
+
+// ── Bulk add people ──────────────────────────────────────────
+app.post('/api/people/bulk', async (req, res) => {
+  const { people, projectId } = req.body;
+  if (!people || !projectId) return res.status(400).json({ error: 'people array and projectId required' });
+  const { data: proj } = await supabase.from('projects').select('*').eq('id', projectId).single();
+  if (!proj) return res.status(404).json({ error: 'Project not found' });
+  const rows = people.map(p => ({
+    id: uid(), project_id: projectId, site: SITE,
+    name: p.name, job_title: p.jobTitle || '', company: '', added_at: new Date().toISOString()
+  }));
+  const { error } = await supabase.from('people').insert(rows);
+  if (error) return res.status(500).json({ error: error.message });
+  invalidatePeopleCache();
+  res.json({ success: true, added: rows.length });
+});
+
 // ── People API ───────────────────────────────────────────────
 app.get('/api/people', async (req, res) => {
   try { res.json(await getPeopleData()); } catch(e) { res.status(500).json({ error: e.message }); }
