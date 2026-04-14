@@ -333,7 +333,6 @@
   var currentVisitors = [];
   var selectedProject = null;
   var currentScreen = 1;
-  var timerInterval = null;
   var autoTimer = null;
 
   // ══════════════════════════════════
@@ -384,7 +383,7 @@
   // ══════════════════════════════════
   function showScreen(n) {
     // Clear any running timer
-    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+    clearActiveTimer();
 
     // Hide all screens
     for (var i = 1; i <= 5; i++) {
@@ -407,44 +406,50 @@
     if (n === 5) { startAutoTimer('s5timerBar', 3, function(){ showScreen(1); }); }
   }
 
+  // ── Unified timer system ──
+  var _activeTimer = null;
+  var _activeReset = null;
+
+  function clearActiveTimer() {
+    if (_activeTimer) { clearInterval(_activeTimer); _activeTimer = null; }
+    if (_activeReset) {
+      document.removeEventListener('touchstart', _activeReset);
+      document.removeEventListener('click', _activeReset);
+      _activeReset = null;
+    }
+  }
+
   function startAutoTimer(barId, seconds, onDone) {
+    clearActiveTimer();
     var timeLeft = seconds;
     var bar = document.getElementById(barId);
     if (bar) bar.style.transform = 'scaleX(1)';
-    timerInterval = setInterval(function() {
+    _activeTimer = setInterval(function() {
       timeLeft--;
       if (bar) bar.style.transform = 'scaleX(' + (timeLeft / seconds) + ')';
-      if (timeLeft <= 0) { clearInterval(timerInterval); timerInterval = null; onDone(); }
+      if (timeLeft <= 0) { clearActiveTimer(); onDone(); }
     }, 1000);
   }
 
-  var _inactivityReset = null;
   function startInactivityTimer(barId, seconds, onDone) {
-    // Remove previous listener if any
-    if (_inactivityReset) {
-      document.removeEventListener('touchstart', _inactivityReset);
-      document.removeEventListener('click', _inactivityReset);
-      _inactivityReset = null;
-    }
+    clearActiveTimer();
     var timeLeft = seconds;
     var bar = document.getElementById(barId);
     if (bar) bar.style.transform = 'scaleX(1)';
-    _inactivityReset = function() {
-      timeLeft = seconds;
-      if (bar) bar.style.transform = 'scaleX(1)';
-    };
-    document.addEventListener('touchstart', _inactivityReset);
-    document.addEventListener('click', _inactivityReset);
-    timerInterval = setInterval(function() {
+    // Delay adding listeners slightly so the click that triggered
+    // this screen change doesn't immediately reset the timer
+    setTimeout(function() {
+      _activeReset = function() {
+        timeLeft = seconds;
+        if (bar) bar.style.transform = 'scaleX(1)';
+      };
+      document.addEventListener('touchstart', _activeReset);
+      document.addEventListener('click', _activeReset);
+    }, 300);
+    _activeTimer = setInterval(function() {
       timeLeft--;
       if (bar) bar.style.transform = 'scaleX(' + (timeLeft / seconds) + ')';
-      if (timeLeft <= 0) {
-        clearInterval(timerInterval); timerInterval = null;
-        document.removeEventListener('touchstart', _inactivityReset);
-        document.removeEventListener('click', _inactivityReset);
-        _inactivityReset = null;
-        onDone();
-      }
+      if (timeLeft <= 0) { clearActiveTimer(); onDone(); }
     }, 1000);
   }
 
