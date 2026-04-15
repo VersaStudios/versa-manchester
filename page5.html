@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Goodbye — Versa</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      height: 100vh; overflow: hidden;
+      font-family: 'Bebas Neue', Arial, sans-serif;
+      padding: 0 max(24px, env(safe-area-inset-left));
+    }
+    #topBar { width: 100%; display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 0 0; flex-shrink: 0; }
+    #logo { width: 100px; cursor: pointer; }
+    #logo img { width: 100%; display: block; }
+    #topRight { text-align: right; }
+    #clock { font-size: 16px; font-weight: bold; line-height: 1.4; color: #1a1a1a; text-align: right; font-family: Arial, sans-serif !important; text-transform: none !important; letter-spacing: normal !important; }
+    #weatherBlock { margin-top: 3px; text-align: right; }
+    #weatherLine { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+    #weatherIcon { font-size: 15px; font-family: Arial, sans-serif !important; text-transform: none !important; }
+    #weatherTemp { font-size: 13px; font-weight: bold; color: #555; font-family: Arial, sans-serif !important; text-transform: none !important; letter-spacing: normal !important; }
+    #weatherSun  { font-size: 11px; color: #999; margin-top: 1px; font-family: Arial, sans-serif !important; text-transform: none !important; letter-spacing: normal !important; }
+    #message { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; text-align: center; }
+    #farewell { font-size: 6vw; font-weight: 900; text-transform: uppercase; color: #1a1a1a; line-height: 1.05; letter-spacing: 0.02em; width: 100%; }
+    #nameText { font-size: 8vw; font-weight: 900; text-transform: uppercase; color: #1a1a1a; line-height: 1.05; letter-spacing: 0.02em; width: 100%; word-break: break-word; }
+    #subText { font-size: 2.8vw; font-weight: bold; text-transform: uppercase; color: #ccc; letter-spacing: 0.1em; margin-top: 14px; }
+    #closeBtn { flex-shrink: 0; margin-bottom: 28px; padding: 16px 44px; font-size: 18px; border-radius: 12px; cursor: pointer; border: 2px solid #1a1a1a; background: transparent; color: #1a1a1a; font-family: inherit; letter-spacing: 0.08em; text-transform: uppercase; -webkit-tap-highlight-color: transparent; transition: background 0.15s, color 0.15s; }
+    #closeBtn:active { background: #1a1a1a; color: white; }
+    #timerBar { position: fixed; bottom: 0; left: 0; height: 4px; background: #1a1a1a; width: 100%; transform-origin: left; transition: transform 1s linear; }
+    body::before { content: ''; position: fixed; inset: 0; z-index: 0; background-image: url('studio-bw.jpg'); background-size: cover; background-position: center; opacity: 0.10; pointer-events: none; }
+    body > * { position: relative; z-index: 1; }
+  </style>
+</head>
+<body>
+  <div id="topBar">
+    <div id="logo"><img src="Versa Logo.png" alt="Versa"></div>
+    <div id="topRight">
+      <div id="clock"></div>
+      <div id="weatherBlock">
+        <div id="weatherLine"><span id="weatherIcon"></span><span id="weatherTemp"></span></div>
+        <div id="weatherSun"></div>
+      </div>
+    </div>
+  </div>
+
+  <div id="message">
+    <div id="farewell"></div>
+    <div id="nameText"></div>
+    <div id="subText"></div>
+  </div>
+
+  <button id="closeBtn" onclick="goHome()">Close</button>
+  <div id="timerBar"></div>
+
+  <script>
+function getDaySuffix(d) {
+      if (d >= 11 && d <= 13) return 'th';
+      switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
+    }
+    function updateClock() {
+      var now = new Date(); var day = now.getDate();
+      var el = document.getElementById('clock'); if (!el) return;
+      var line1 = now.toLocaleString('en-GB',{weekday:'long'}) + ' ' + day + getDaySuffix(day) + ' ' + now.toLocaleString('en-GB',{month:'long'});
+      var line2 = now.toLocaleString('en-GB',{hour:'numeric',minute:'2-digit',hour12:true}).toLowerCase();
+      el.innerHTML = '<span style="display:block;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;color:#1a1a1a;text-transform:none;letter-spacing:normal;line-height:1.4;text-align:right;">' + line1 + '</span><span style="display:block;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;color:#1a1a1a;text-transform:none;letter-spacing:normal;line-height:1.4;text-align:right;">' + line2 + '</span>';
+    }
+    setInterval(updateClock, 1000); updateClock();
+
+function loadWeather() {
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
+        .then(function(r){return r.json();}).then(function(d){
+          var icons={0:'☀️',1:'⛅',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',61:'🌧️',71:'🌨️',80:'🌧️',95:'⛈️'};
+          var key=Object.keys(icons).reverse().find(function(k){return d.current.weathercode>=+k;})||'0';
+          var s='font-family:Arial,sans-serif;text-transform:none;letter-spacing:normal;';
+          document.getElementById('weatherTemp').setAttribute('style',s+'font-size:13px;font-weight:bold;color:#555;');
+          document.getElementById('weatherIcon').setAttribute('style',s+'font-size:15px;');
+          document.getElementById('weatherSun').setAttribute('style',s+'font-size:11px;color:#999;margin-top:1px;display:block;text-align:right;');
+          document.getElementById('weatherTemp').textContent=Math.round(d.current.temperature_2m)+'°C';
+          document.getElementById('weatherIcon').textContent=icons[key];
+          document.getElementById('weatherSun').textContent='Rise '+d.daily.sunrise[0].split('T')[1]+'  Set '+d.daily.sunset[0].split('T')[1];
+        }).catch(function(){});
+    }
+    loadWeather(); setInterval(loadWeather, 600000);
+
+    var standardFarewells = ['Goodbye','Bye','Farewell','See you','See you soon','See you later','Take care','Until next time','Bye for now'];
+    var visitorFarewells = ['Thank you for visiting','We hope to see you again','Have a wonderful day'];
+    var isVisitor = sessionStorage.getItem('isNewVisitor') === 'true';
+    var name = sessionStorage.getItem('visitorName') || 'there';
+    var pool = isVisitor ? visitorFarewells : standardFarewells;
+    document.getElementById('farewell').textContent = pool[Math.floor(Math.random() * pool.length)] + ',';
+    document.getElementById('nameText').textContent = name + '.';
+    if (name.length > 10) document.getElementById('nameText').style.fontSize = '6.5vw';
+
+    function goHome() { window.location.href = 'index.html'; }
+    var timeLeft = 3;
+    var bar = document.getElementById('timerBar');
+    bar.style.transform = 'scaleX(1)';
+    var t = setInterval(function() {
+      timeLeft--; bar.style.transform = 'scaleX(' + (timeLeft/3) + ')';
+      if (timeLeft <= 0) { clearInterval(t); goHome(); }
+    }, 1000);
+  </script>
+</body>
+</html>

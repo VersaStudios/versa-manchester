@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Versa Manchester</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; overflow: hidden; }
+    body {
+      background: #fff;
+      font-family: 'Bebas Neue', Arial, sans-serif;
+      display: flex; flex-direction: column; align-items: center;
+      height: 100vh; overflow: hidden;
+      padding: 0 max(24px, env(safe-area-inset-left));
+    }
+    body::before {
+      content: ''; position: fixed; inset: 0; z-index: 0;
+      background-image: url('studio-bw.jpg');
+      background-size: cover; background-position: center;
+      opacity: 0.10; pointer-events: none;
+    }
+    body > * { position: relative; z-index: 1; }
+
+    #topArea {
+      width: 100%; display: grid; grid-template-columns: 1fr auto 1fr;
+      align-items: flex-start; padding: 20px 0 0; flex-shrink: 0;
+    }
+    #topLeft { display: flex; align-items: flex-start; }
+    #staffBtn {
+      background: transparent; border: none; padding: 0;
+      cursor: pointer; opacity: 0.5; transition: opacity 0.2s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    #staffBtn:active { opacity: 1; }
+    #staffBtn img { width: 32px; height: 32px; display: block; }
+    #centreLogoArea {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: flex-start;
+      padding-top: 4px;
+    }
+    #centreLogo { width: 260px; display: block; }
+    #siteLabel {
+      font-size: 12px; font-weight: bold; letter-spacing: 0.22em;
+      color: #aaa; text-transform: uppercase; margin-top: 8px;
+      font-family: Arial, sans-serif; text-align: center;
+    }
+    #topRight { display: flex; justify-content: flex-end; align-items: flex-start; }
+    .top-right { text-align: right; }
+    #clock {
+      font-size: 16px; font-weight: bold; line-height: 1.4;
+      color: #1a1a1a; text-align: right;
+      font-family: Arial, sans-serif; text-transform: none;
+    }
+    .weather-block { margin-top: 3px; text-align: right; }
+    .weather-line { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+    .weather-icon { font-size: 15px; font-family: Arial, sans-serif; }
+    .weather-temp { font-size: 13px; font-weight: bold; color: #555; font-family: Arial, sans-serif; text-transform: none; }
+    .weather-sun { font-size: 11px; color: #999; margin-top: 1px; font-family: Arial, sans-serif; text-transform: none; }
+
+    #buttons {
+      flex: 1; width: 100%; display: flex; padding: 16px 0 28px; gap: 20px; max-height: 380px;
+    }
+    .action-btn {
+      flex: 1; font-size: 48px; font-weight: bold;
+      border-radius: 24px; cursor: pointer; border: none;
+      font-family: 'Bebas Neue', Arial, sans-serif;
+      letter-spacing: 0.04em; background: #1a1a1a; color: #fff;
+      box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+      transition: transform 0.08s, box-shadow 0.08s;
+      -webkit-tap-highlight-color: transparent;
+      text-decoration: none; display: flex; align-items: center; justify-content: center;
+    }
+    .action-btn:active { transform: scale(0.97); box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
+
+    #nfcMsg {
+      position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+      background: #1a1a1a; color: #fff; padding: 12px 28px;
+      border-radius: 999px; font-size: 15px; font-family: Arial, sans-serif;
+      opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100;
+    }
+  </style>
+</head>
+<body>
+  <div id="topArea">
+    <div id="topLeft">
+      <button id="staffBtn" onclick="window.location.href='monitor.html'">
+        <img src="List.png" alt="Staff">
+      </button>
+    </div>
+    <div id="centreLogoArea">
+      <img id="centreLogo" src="Versa Logo.png" alt="Versa">
+      <div id="siteLabel">Manchester</div>
+    </div>
+    <div id="topRight">
+      <div class="top-right">
+        <div id="clock"></div>
+        <div class="weather-block">
+          <div class="weather-line"><span class="weather-icon" id="wIcon"></span><span class="weather-temp" id="wTemp"></span></div>
+          <div class="weather-sun" id="wSun"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="buttons">
+    <a href="page2.html" class="action-btn">In</a>
+    <a href="page3.html" class="action-btn">Out</a>
+  </div>
+
+  <div id="nfcMsg"></div>
+
+  <script>
+    /* ── Clock ── */
+    function getDaySuffix(d) {
+      if (d >= 11 && d <= 13) return 'th';
+      switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
+    }
+    function updateClock() {
+      var now = new Date(); var day = now.getDate();
+      var el = document.getElementById('clock'); if (!el) return;
+      var line1 = now.toLocaleString('en-GB',{weekday:'long'}) + ' ' + day + getDaySuffix(day) + ' ' + now.toLocaleString('en-GB',{month:'long'});
+      var line2 = now.toLocaleString('en-GB',{hour:'numeric',minute:'2-digit',hour12:true}).toLowerCase();
+      el.innerHTML = '<span style="display:block;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;color:#1a1a1a;text-transform:none;letter-spacing:normal;line-height:1.4;text-align:right;">' + line1 + '</span><span style="display:block;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;color:#1a1a1a;text-transform:none;letter-spacing:normal;line-height:1.4;text-align:right;">' + line2 + '</span>';
+    }
+    setInterval(updateClock, 1000); updateClock();
+
+    /* ── Weather ── */
+    function loadWeather() {
+      fetch('https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
+        .then(function(r){return r.json();}).then(function(d){
+          var icons={0:'☀️',1:'⛅',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',61:'🌧️',71:'🌨️',80:'🌧️',95:'⛈️'};
+          var key=Object.keys(icons).reverse().find(function(k){return d.current.weathercode>=+k;})||'0';
+          var s='font-family:Arial,sans-serif;text-transform:none;letter-spacing:normal;';
+          document.getElementById('wTemp').setAttribute('style',s+'font-size:13px;font-weight:bold;color:#555;');
+          document.getElementById('wIcon').setAttribute('style',s+'font-size:15px;');
+          document.getElementById('wSun').setAttribute('style',s+'font-size:11px;color:#999;margin-top:1px;display:block;text-align:right;');
+          document.getElementById('wTemp').textContent=Math.round(d.current.temperature_2m)+'°C';
+          document.getElementById('wIcon').textContent=icons[key];
+          document.getElementById('wSun').textContent='Rise '+d.daily.sunrise[0].split('T')[1]+'  Set '+d.daily.sunset[0].split('T')[1];
+        }).catch(function(){});
+    }
+    loadWeather(); setInterval(loadWeather, 600000);
+
+    /* ── NFC ── */
+    function showNfcMsg(msg) {
+      var el = document.getElementById('nfcMsg');
+      el.textContent = msg; el.style.opacity = '1';
+      clearTimeout(el._t);
+      el._t = setTimeout(function(){ el.style.opacity = '0'; }, 2500);
+    }
+    async function startNFC() {
+      if (!('NDEFReader' in window)) return;
+      try {
+        var reader = new NDEFReader();
+        await reader.scan();
+        reader.onreading = async function(e) {
+          try {
+            var r = await fetch('/api/nfc-tap', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nfcId: e.serialNumber}) });
+            var data = await r.json();
+            if (data.error) { showNfcMsg(data.error); return; }
+            if (data.action === 'signin') {
+              sessionStorage.setItem('visitorName', data.name);
+              sessionStorage.setItem('isNewVisitor', 'false');
+              window.location.href = 'page4.html';
+            } else {
+              sessionStorage.setItem('visitorName', data.name);
+              sessionStorage.setItem('isNewVisitor', 'false');
+              window.location.href = 'page5.html';
+            }
+          } catch(err) { showNfcMsg('NFC error'); }
+        };
+      } catch(err) {}
+    }
+    startNFC();
+
+    /* ── Auto sign-out at midnight (non-ShopOn) and 6am (ShopOn) ── */
+    function scheduleAutoSignout() {
+      var now = new Date();
+      var midnight = new Date(now); midnight.setHours(24, 0, 10, 0);
+      setTimeout(async function() {
+        try {
+          var r = await fetch('/api/visitors'); var visitors = await r.json();
+          for (var v of visitors) {
+            if (!v.project.toLowerCase().includes('shopon'))
+              await fetch('/api/signout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:v.name}) });
+          }
+        } catch(e) {}
+        scheduleAutoSignout();
+      }, midnight - now);
+      var sixAm = new Date(now); sixAm.setHours(6, 0, 10, 0);
+      if (sixAm <= now) sixAm.setDate(sixAm.getDate()+1);
+      setTimeout(async function() {
+        try {
+          var r = await fetch('/api/visitors'); var visitors = await r.json();
+          for (var v of visitors) {
+            if (v.project.toLowerCase().includes('shopon'))
+              await fetch('/api/signout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:v.name}) });
+          }
+        } catch(e) {}
+      }, sixAm - now);
+    }
+    scheduleAutoSignout();
+  </script>
+</body>
+</html>
