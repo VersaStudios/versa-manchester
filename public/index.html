@@ -333,6 +333,7 @@
   var currentVisitors = [];
   var selectedProject = null;
   var currentScreen = 1;
+  var timerInterval = null;
   var autoTimer = null;
 
   // ══════════════════════════════════
@@ -383,7 +384,7 @@
   // ══════════════════════════════════
   function showScreen(n) {
     // Clear any running timer
-    clearActiveTimer();
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
 
     // Hide all screens
     for (var i = 1; i <= 5; i++) {
@@ -406,49 +407,33 @@
     if (n === 5) { startAutoTimer('s5timerBar', 3, function(){ showScreen(1); }); }
   }
 
-  // ── Timer system ──
-  var _activeTimer = null;
-
-  function clearActiveTimer() {
-    if (_activeTimer) { clearInterval(_activeTimer); _activeTimer = null; }
-  }
-
   function startAutoTimer(barId, seconds, onDone) {
-    clearActiveTimer();
     var timeLeft = seconds;
     var bar = document.getElementById(barId);
     if (bar) bar.style.transform = 'scaleX(1)';
-    _activeTimer = setInterval(function() {
+    timerInterval = setInterval(function() {
       timeLeft--;
       if (bar) bar.style.transform = 'scaleX(' + (timeLeft / seconds) + ')';
-      if (timeLeft <= 0) { clearActiveTimer(); onDone(); }
+      if (timeLeft <= 0) { clearInterval(timerInterval); timerInterval = null; onDone(); }
     }, 1000);
   }
 
   function startInactivityTimer(barId, seconds, onDone) {
-    clearActiveTimer();
     var timeLeft = seconds;
     var bar = document.getElementById(barId);
     if (bar) bar.style.transform = 'scaleX(1)';
-    _activeTimer = setInterval(function() {
+    function reset() {
+      timeLeft = seconds;
+      if (bar) bar.style.transform = 'scaleX(1)';
+    }
+    document.addEventListener('touchstart', reset);
+    document.addEventListener('click', reset);
+    timerInterval = setInterval(function() {
       timeLeft--;
       if (bar) bar.style.transform = 'scaleX(' + (timeLeft / seconds) + ')';
-      if (timeLeft <= 0) { clearActiveTimer(); onDone(); }
+      if (timeLeft <= 0) { clearInterval(timerInterval); timerInterval = null; onDone(); }
     }, 1000);
   }
-
-  // Reset inactivity timer on any touch within sign-in/out screens
-  function resetInactivity() {
-    // Only reset if we are on screen 2 or 3
-    if (currentScreen !== 2 && currentScreen !== 3) return;
-    if (!_activeTimer) return;
-    clearActiveTimer();
-    var barId = currentScreen === 2 ? 's2timerBar' : 's3timerBar';
-    var onDone = function(){ showScreen(1); };
-    startInactivityTimer(barId, 30, onDone);
-  }
-  document.getElementById('screen2').addEventListener('touchstart', resetInactivity);
-  document.getElementById('screen3').addEventListener('touchstart', resetInactivity);
 
   // ══════════════════════════════════
   // Data loading
@@ -492,6 +477,7 @@
     document.getElementById('s2confirmBtn').textContent = 'Sign In';
     selectedProject = null;
     startInactivityTimer('s2timerBar', 30, function(){ showScreen(1); });
+    setTimeout(function(){ document.getElementById('s2input').focus(); }, 100);
   }
 
   document.getElementById('s2input').addEventListener('input', function() {
@@ -624,6 +610,7 @@
     document.getElementById('s3status').textContent = '';
     loadVisitors();
     startInactivityTimer('s3timerBar', 30, function(){ showScreen(1); });
+    setTimeout(function(){ document.getElementById('s3input').focus(); }, 100);
   }
 
   document.getElementById('s3input').addEventListener('input', function() {
