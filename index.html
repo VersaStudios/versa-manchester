@@ -9,33 +9,75 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     html, body { height: 100%; overflow: hidden; }
+
     body {
       background: #fff;
       font-family: 'Bebas Neue', Arial, sans-serif;
-      display: flex; flex-direction: column; align-items: center;
+      height: 100vh; overflow: hidden;
+    }
+
+    /* ── Screens ── */
+    .screen {
+      display: none; flex-direction: column; align-items: center;
       height: 100vh; overflow: hidden;
       padding: 0 max(24px, env(safe-area-inset-left));
+      position: absolute; inset: 0;
     }
+    .screen.active { display: flex; }
+
+    /* ── Shared top bar ── */
+    .top-bar {
+      width: 100%; display: flex; justify-content: space-between; align-items: flex-start;
+      padding: 20px 0 0; flex-shrink: 0;
+    }
+    .top-logo { width: 100px; cursor: pointer; }
+    .top-logo img { width: 100%; display: block; }
+    .top-right { text-align: right; }
+    #clock {
+      font-size: 16px; font-weight: bold; line-height: 1.4;
+      color: #1a1a1a; text-align: right;
+      font-family: Arial, sans-serif; text-transform: none;
+    }
+    .weather-block { margin-top: 3px; text-align: right; }
+    .weather-line { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
+    .weather-icon { font-size: 15px; font-family: Arial, sans-serif; }
+    .weather-temp { font-size: 13px; font-weight: bold; color: #555; font-family: Arial, sans-serif; text-transform: none; }
+    .weather-sun  { font-size: 11px; color: #999; margin-top: 1px; font-family: Arial, sans-serif; text-transform: none; }
+
+    /* ── BG image ── */
     body::before {
       content: ''; position: fixed; inset: 0; z-index: 0;
       background-image: url('studio-bw.jpg');
       background-size: cover; background-position: center;
       opacity: 0.10; pointer-events: none;
     }
-    body > * { position: relative; z-index: 1; }
+    .screen > * { position: relative; z-index: 1; }
 
-    #topArea {
-      width: 100%; display: grid; grid-template-columns: 1fr auto 1fr;
-      align-items: flex-start; padding: 20px 0 0; flex-shrink: 0;
+    /* ── Timer bar ── */
+    .timer-bar {
+      position: fixed; bottom: 0; left: 0;
+      height: 4px; background: #1a1a1a; width: 100%;
+      transform-origin: left; transition: transform 1s linear;
+      z-index: 50;
     }
-    #topLeft { display: flex; align-items: flex-start; }
+
+    /* ════════════════════════════════
+       SCREEN 1: Home
+    ════════════════════════════════ */
     #staffBtn {
       background: transparent; border: none; padding: 0;
       cursor: pointer; opacity: 0.5; transition: opacity 0.2s;
-      -webkit-tap-highlight-color: transparent;
+      flex-shrink: 0; -webkit-tap-highlight-color: transparent;
     }
     #staffBtn:active { opacity: 1; }
     #staffBtn img { width: 32px; height: 32px; display: block; }
+
+    #homeTopArea {
+      width: 100%; display: grid; grid-template-columns: 1fr auto 1fr;
+      align-items: flex-start; padding: 20px 0 0; flex-shrink: 0;
+    }
+    #homeTopLeft { display: flex; align-items: flex-start; }
+    #homeTopRight { display: flex; justify-content: flex-end; align-items: flex-start; }
     #centreLogoArea {
       display: flex; flex-direction: column;
       align-items: center; justify-content: flex-start;
@@ -47,22 +89,7 @@
       color: #aaa; text-transform: uppercase; margin-top: 8px;
       font-family: Arial, sans-serif; text-align: center;
     }
-    #topRight { display: flex; justify-content: flex-end; align-items: flex-start; }
-    .top-right { text-align: right; }
-    #clock {
-      font-size: 16px; font-weight: bold; line-height: 1.4;
-      color: #1a1a1a; text-align: right;
-      font-family: Arial, sans-serif; text-transform: none;
-    }
-    .weather-block { margin-top: 3px; text-align: right; }
-    .weather-line { display: flex; align-items: center; justify-content: flex-end; gap: 4px; }
-    .weather-icon { font-size: 15px; font-family: Arial, sans-serif; }
-    .weather-temp { font-size: 13px; font-weight: bold; color: #555; font-family: Arial, sans-serif; text-transform: none; }
-    .weather-sun { font-size: 11px; color: #999; margin-top: 1px; font-family: Arial, sans-serif; text-transform: none; }
-
-    #buttons {
-      flex: 1; width: 100%; display: flex; padding: 16px 0 28px; gap: 20px; max-height: 380px;
-    }
+    #homeButtons { flex: 1; width: 100%; display: flex; padding: 16px 0 28px; gap: 20px; max-height: 380px; }
     .action-btn {
       flex: 1; font-size: 48px; font-weight: bold;
       border-radius: 24px; cursor: pointer; border: none;
@@ -71,138 +98,657 @@
       box-shadow: 0 6px 24px rgba(0,0,0,0.18);
       transition: transform 0.08s, box-shadow 0.08s;
       -webkit-tap-highlight-color: transparent;
-      text-decoration: none; display: flex; align-items: center; justify-content: center;
     }
     .action-btn:active { transform: scale(0.97); box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
-
     #nfcMsg {
       position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
       background: #1a1a1a; color: #fff; padding: 12px 28px;
       border-radius: 999px; font-size: 15px; font-family: Arial, sans-serif;
       opacity: 0; transition: opacity 0.3s; pointer-events: none; z-index: 100;
     }
+
+    /* ════════════════════════════════
+       SCREEN 2: Sign In
+    ════════════════════════════════ */
+    #s2heading { padding: 16px 0 0; flex-shrink: 0; width: 100%; text-align: center; transition: all 0.2s; }
+    #s2heading h1 { font-size: 11vw; font-weight: 900; text-transform: uppercase; color: #1a1a1a; line-height: 1.0; letter-spacing: 0.02em; }
+    #s2heading.hidden { display: none; }
+    #s2searchArea { flex: 1; padding: 20px 0 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; width: 100%; max-width: 560px; }
+    #s2searchWrap { position: relative; flex-shrink: 0; }
+    input[type="text"] { width: 100%; padding: 18px 20px; border-radius: 14px; border: 2px solid #1a1a1a; font-size: 24px; font-family: inherit; background: white; color: #1a1a1a; outline: none; -webkit-user-select: text; }
+    #s2results { display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #1a1a1a; border-top: none; border-radius: 0 0 14px 14px; z-index: 10; max-height: 260px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+    .result-item { padding: 16px 20px; cursor: pointer; border-bottom: 1px solid #f0f0f0; -webkit-tap-highlight-color: transparent; }
+    .result-item:last-child { border-bottom: none; }
+    .result-item:active { background: #f5f5f5; }
+    .result-name { font-size: 20px; font-weight: bold; color: #1a1a1a; line-height: 1.3; letter-spacing: 0.02em; }
+    .result-meta { font-size: 14px; color: #888; margin-top: 4px; line-height: 1.3; font-family: Arial, sans-serif; text-transform: none; }
+    #s2projectPicker { display: none; flex-direction: column; gap: 10px; flex-shrink: 0; }
+    #s2projectPicker.visible { display: flex; }
+    #s2pickerLabel { font-size: 14px; color: #888; padding-left: 4px; font-family: Arial, sans-serif; text-transform: none; }
+    .proj-btn { width: 100%; padding: 16px 20px; font-size: 18px; font-weight: bold; border-radius: 14px; cursor: pointer; text-align: left; border: 2px solid #1a1a1a; background: white; color: #1a1a1a; font-family: inherit; -webkit-tap-highlight-color: transparent; transition: background 0.1s, color 0.1s; }
+    .proj-btn:active { background: #1a1a1a; color: white; }
+    .proj-meta { font-size: 13px; color: #888; font-weight: normal; margin-top: 3px; font-family: Arial, sans-serif; text-transform: none; }
+    .proj-btn:active .proj-meta { color: rgba(255,255,255,0.6); }
+    #s2newForm { display: none; flex-direction: column; gap: 10px; flex-shrink: 0; }
+    #s2newForm.visible { display: flex; }
+    #s2projectBadge { font-size: 13px; color: #888; padding-left: 4px; font-family: Arial, sans-serif; text-transform: none; }
+    #s2newForm label { font-size: 13px; color: #888; padding-left: 4px; font-family: Arial, sans-serif; text-transform: none; }
+    #s2newForm input { font-size: 18px; padding: 14px 18px; }
+    #s2confirmBtn { padding: 16px; font-size: 20px; font-weight: bold; border-radius: 14px; cursor: pointer; border: none; background: #1a1a1a; color: white; font-family: inherit; letter-spacing: 0.04em; text-transform: uppercase; -webkit-tap-highlight-color: transparent; }
+    #s2status { font-size: 14px; color: #c00; min-height: 1.2em; padding: 0 4px; flex-shrink: 0; font-family: Arial, sans-serif; text-transform: none; }
+
+    /* ════════════════════════════════
+       SCREEN 3: Sign Out
+    ════════════════════════════════ */
+    #s3heading { padding: 16px 0 0; flex-shrink: 0; width: 100%; text-align: center; transition: all 0.2s; }
+    #s3heading h1 { font-size: 11vw; font-weight: 900; text-transform: uppercase; color: #1a1a1a; line-height: 1.0; letter-spacing: 0.02em; }
+    #s3heading.hidden { display: none; }
+    #s3searchArea { flex: 1; padding: 20px 0 20px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; width: 100%; max-width: 560px; }
+    #s3searchWrap { position: relative; }
+    #s3results { display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #1a1a1a; border-top: none; border-radius: 0 0 14px 14px; z-index: 10; max-height: 280px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
+    #s3status { font-size: 14px; color: #c00; min-height: 1.2em; padding: 0 4px; font-family: Arial, sans-serif; text-transform: none; }
+
+    /* ════════════════════════════════
+       SCREEN 4 & 5: Welcome / Goodbye
+    ════════════════════════════════ */
+    .confirm-screen {
+      justify-content: space-between;
+      padding-top: 0; padding-bottom: 0;
+    }
+    #s4message, #s5message {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      width: 100%; text-align: center;
+    }
+    .big-greeting { font-size: 8vw; font-weight: 900; text-transform: uppercase; color: #1a1a1a; line-height: 1.05; letter-spacing: 0.02em; width: 100%; }
+    .big-name { font-size: 8vw; font-weight: 900; text-transform: uppercase; color: #1a1a1a; line-height: 1.05; letter-spacing: 0.02em; width: 100%; word-break: break-word; }
+    .sub-text { font-size: 2.8vw; font-weight: bold; text-transform: uppercase; color: #ccc; letter-spacing: 0.1em; margin-top: 10px; }
+    #noticeBanner { background: #1a1a1a; color: #fff; border-radius: 12px; padding: 10px 28px; display: none; flex-shrink: 0; margin: 0 0 16px; text-align: center; align-self: center; max-width: 80%; }
+    .notice-label { font-size: 11px; font-weight: bold; letter-spacing: 0.15em; text-transform: uppercase; color: rgba(255,255,255,0.45); margin-bottom: 4px; font-family: Arial, sans-serif; }
+    #noticeText { font-size: 4vw; font-weight: bold; letter-spacing: 0.04em; text-transform: uppercase; color: #fff; line-height: 1.2; }
+    .close-btn {
+      flex-shrink: 0; margin-bottom: 28px; padding: 16px 44px; font-size: 18px;
+      border-radius: 12px; cursor: pointer; border: 2px solid #1a1a1a;
+      background: transparent; color: #1a1a1a; font-family: inherit;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s, color 0.15s;
+    }
+    .close-btn:active { background: #1a1a1a; color: white; }
   </style>
 </head>
 <body>
-  <div id="topArea">
-    <div id="topLeft">
+
+<!-- ══════════════════════════════════
+     SCREEN 1: Home
+══════════════════════════════════ -->
+<div id="screen1" class="screen active" style="position:relative;">
+  <div id="homeTopArea">
+    <div id="homeTopLeft">
       <button id="staffBtn" onclick="window.location.href='monitor.html'">
-        <img src="List.png" alt="Staff">
+        <img src="List.png" alt="&#9776;">
       </button>
     </div>
     <div id="centreLogoArea">
       <img id="centreLogo" src="Versa Logo.png" alt="Versa">
       <div id="siteLabel">Manchester</div>
     </div>
-    <div id="topRight">
+    <div id="homeTopRight">
       <div class="top-right">
         <div id="clock"></div>
         <div class="weather-block">
-          <div class="weather-line"><span class="weather-icon" id="wIcon"></span><span class="weather-temp" id="wTemp"></span></div>
-          <div class="weather-sun" id="wSun"></div>
+          <div class="weather-line"><span class="weather-icon" id="wIcon1"></span><span class="weather-temp" id="wTemp1"></span></div>
+          <div class="weather-sun" id="wSun1"></div>
         </div>
       </div>
     </div>
   </div>
-
-  <div id="buttons">
-    <a href="page2.html" class="action-btn">In</a>
-    <a href="page3.html" class="action-btn">Out</a>
+  <div id="homeButtons">
+    <button class="action-btn" onclick="showScreen(2)">In</button>
+    <button class="action-btn" onclick="showScreen(3)">Out</button>
   </div>
-
   <div id="nfcMsg"></div>
+</div>
 
-  <script>
-    /* ── Clock ── */
-    function getDaySuffix(d) {
-      if (d >= 11 && d <= 13) return 'th';
-      switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
-    }
-    function updateClock() {
-      var now = new Date(); var day = now.getDate();
-      var el = document.getElementById('clock'); if (!el) return;
-      var line1 = now.toLocaleString('en-GB',{weekday:'long'}) + ' ' + day + getDaySuffix(day) + ' ' + now.toLocaleString('en-GB',{month:'long'});
-      var line2 = now.toLocaleString('en-GB',{hour:'numeric',minute:'2-digit',hour12:true}).toLowerCase();
-      el.innerHTML = '<span style="display:block;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;color:#1a1a1a;text-transform:none;letter-spacing:normal;line-height:1.4;text-align:right;">' + line1 + '</span><span style="display:block;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;color:#1a1a1a;text-transform:none;letter-spacing:normal;line-height:1.4;text-align:right;">' + line2 + '</span>';
-    }
-    setInterval(updateClock, 1000); updateClock();
+<!-- ══════════════════════════════════
+     SCREEN 2: Sign In
+══════════════════════════════════ -->
+<div id="screen2" class="screen">
+  <div class="top-bar">
+    <div class="top-logo" onclick="showScreen(1)"><img src="Versa Logo.png" alt="Versa"></div>
+    <div class="top-right">
+      <div id="clock2"></div>
+      <div class="weather-block">
+        <div class="weather-line"><span class="weather-icon" id="wIcon2"></span><span class="weather-temp" id="wTemp2"></span></div>
+        <div class="weather-sun" id="wSun2"></div>
+      </div>
+    </div>
+  </div>
+  <div id="s2heading"><h1>Sign<br>In</h1></div>
+  <div id="s2searchArea">
+    <div id="s2searchWrap">
+      <input id="s2input" type="text" placeholder="Type your name..."
+             autocomplete="new-password" autocorrect="off" autocapitalize="words" inputmode="text" name="search_person">
+      <div id="s2results"></div>
+    </div>
+    <div id="s2projectPicker">
+      <div id="s2pickerLabel">Sign in as a visitor</div>
+      <div id="s2projectBtnList"></div>
+    </div>
+    <div id="s2newForm">
+      <div id="s2projectBadge"></div>
+      <label for="s2jobTitle">Job title (optional)</label>
+      <input id="s2jobTitle" type="text" placeholder="e.g. Producer" autocomplete="off" autocapitalize="words" inputmode="text">
+      <div id="s2companyRow" style="display:none; flex-direction:column; gap:4px;">
+        <label for="s2company">Company (optional)</label>
+        <input id="s2company" type="text" placeholder="e.g. BBC" autocomplete="off" inputmode="text">
+      </div>
+      <button id="s2confirmBtn" onclick="confirmSignIn()">Sign In</button>
+    </div>
+    <div id="s2status"></div>
+  </div>
+  <div class="timer-bar" id="s2timerBar"></div>
+</div>
 
-    /* ── Weather ── */
-    function loadWeather() {
-      fetch('https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
-        .then(function(r){return r.json();}).then(function(d){
-          var icons={0:'☀️',1:'⛅',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',61:'🌧️',71:'🌨️',80:'🌧️',95:'⛈️'};
-          var key=Object.keys(icons).reverse().find(function(k){return d.current.weathercode>=+k;})||'0';
-          var s='font-family:Arial,sans-serif;text-transform:none;letter-spacing:normal;';
-          document.getElementById('wTemp').setAttribute('style',s+'font-size:13px;font-weight:bold;color:#555;');
-          document.getElementById('wIcon').setAttribute('style',s+'font-size:15px;');
-          document.getElementById('wSun').setAttribute('style',s+'font-size:11px;color:#999;margin-top:1px;display:block;text-align:right;');
-          document.getElementById('wTemp').textContent=Math.round(d.current.temperature_2m)+'°C';
-          document.getElementById('wIcon').textContent=icons[key];
-          document.getElementById('wSun').textContent='Rise '+d.daily.sunrise[0].split('T')[1]+'  Set '+d.daily.sunset[0].split('T')[1];
-        }).catch(function(){});
-    }
-    loadWeather(); setInterval(loadWeather, 600000);
+<!-- ══════════════════════════════════
+     SCREEN 3: Sign Out
+══════════════════════════════════ -->
+<div id="screen3" class="screen">
+  <div class="top-bar">
+    <div class="top-logo" onclick="showScreen(1)"><img src="Versa Logo.png" alt="Versa"></div>
+    <div class="top-right">
+      <div id="clock3"></div>
+      <div class="weather-block">
+        <div class="weather-line"><span class="weather-icon" id="wIcon3"></span><span class="weather-temp" id="wTemp3"></span></div>
+        <div class="weather-sun" id="wSun3"></div>
+      </div>
+    </div>
+  </div>
+  <div id="s3heading"><h1>Sign<br>Out</h1></div>
+  <div id="s3searchArea">
+    <div id="s3searchWrap">
+      <input id="s3input" type="text" placeholder="Type your name..."
+             autocomplete="new-password" autocorrect="off" autocapitalize="words" inputmode="text" name="search_signout">
+      <div id="s3results"></div>
+    </div>
+    <div id="s3status"></div>
+  </div>
+  <div class="timer-bar" id="s3timerBar"></div>
+</div>
 
-    /* ── NFC ── */
-    function showNfcMsg(msg) {
-      var el = document.getElementById('nfcMsg');
-      el.textContent = msg; el.style.opacity = '1';
-      clearTimeout(el._t);
-      el._t = setTimeout(function(){ el.style.opacity = '0'; }, 2500);
+<!-- ══════════════════════════════════
+     SCREEN 4: Welcome (Sign In)
+══════════════════════════════════ -->
+<div id="screen4" class="screen confirm-screen">
+  <div class="top-bar">
+    <div class="top-logo" onclick="showScreen(1)"><img src="Versa Logo.png" alt="Versa"></div>
+    <div class="top-right">
+      <div id="clock4"></div>
+      <div class="weather-block">
+        <div class="weather-line"><span class="weather-icon" id="wIcon4"></span><span class="weather-temp" id="wTemp4"></span></div>
+        <div class="weather-sun" id="wSun4"></div>
+      </div>
+    </div>
+  </div>
+  <div id="s4message">
+    <div id="s4greeting" class="big-greeting"></div>
+    <div id="s4name" class="big-name"></div>
+    <div id="s4sub" class="sub-text"></div>
+  </div>
+  <div id="noticeBanner">
+    <div class="notice-label">Today's notice</div>
+    <div id="noticeText"></div>
+  </div>
+  <button class="close-btn" onclick="showScreen(1)">Close</button>
+  <div class="timer-bar" id="s4timerBar"></div>
+</div>
+
+<!-- ══════════════════════════════════
+     SCREEN 5: Goodbye (Sign Out)
+══════════════════════════════════ -->
+<div id="screen5" class="screen confirm-screen">
+  <div class="top-bar">
+    <div class="top-logo" onclick="showScreen(1)"><img src="Versa Logo.png" alt="Versa"></div>
+    <div class="top-right">
+      <div id="clock5"></div>
+      <div class="weather-block">
+        <div class="weather-line"><span class="weather-icon" id="wIcon5"></span><span class="weather-temp" id="wTemp5"></span></div>
+        <div class="weather-sun" id="wSun5"></div>
+      </div>
+    </div>
+  </div>
+  <div id="s5message">
+    <div id="s5farewell" class="big-greeting"></div>
+    <div id="s5name" class="big-name"></div>
+  </div>
+  <button class="close-btn" onclick="showScreen(1)">Close</button>
+  <div class="timer-bar" id="s5timerBar"></div>
+</div>
+
+<script>
+  // ══════════════════════════════════
+  // State
+  // ══════════════════════════════════
+  var peopleData = null;
+  var currentVisitors = [];
+  var selectedProject = null;
+  var currentScreen = 1;
+  var autoTimer = null;
+
+  // ══════════════════════════════════
+  // Clock — updates all screens
+  // ══════════════════════════════════
+  function getDaySuffix(d) {
+    if (d >= 11 && d <= 13) return 'th';
+    switch (d % 10) { case 1: return 'st'; case 2: return 'nd'; case 3: return 'rd'; default: return 'th'; }
+  }
+  function updateClock() {
+    var now = new Date(); var day = now.getDate();
+    var line1 = now.toLocaleString('en-GB',{weekday:'long'}) + ' ' + day + getDaySuffix(day) + ' ' + now.toLocaleString('en-GB',{month:'long'});
+    var line2 = now.toLocaleString('en-GB',{hour:'numeric',minute:'2-digit',hour12:true}).toLowerCase();
+    var html = '<span style="display:block;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;color:#1a1a1a;text-transform:none;letter-spacing:normal;line-height:1.4;text-align:right;">' + line1 + '</span>' +
+               '<span style="display:block;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;color:#1a1a1a;text-transform:none;letter-spacing:normal;line-height:1.4;text-align:right;">' + line2 + '</span>';
+    for (var i = 1; i <= 5; i++) {
+      var el = document.getElementById('clock' + (i === 1 ? '' : i));
+      if (el) el.innerHTML = html;
     }
-    async function startNFC() {
-      if (!('NDEFReader' in window)) return;
+  }
+  setInterval(updateClock, 1000); updateClock();
+
+  // ══════════════════════════════════
+  // Weather — updates all screens
+  // ══════════════════════════════════
+  function loadWeather() {
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
+      .then(function(r){return r.json();}).then(function(d){
+        var icons={0:'☀️',1:'⛅',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',61:'🌧️',71:'🌨️',80:'🌧️',95:'⛈️'};
+        var key=Object.keys(icons).reverse().find(function(k){return d.current.weathercode>=+k;})||'0';
+        var temp = Math.round(d.current.temperature_2m)+'°C';
+        var icon = icons[key];
+        var sun = 'Rise '+d.daily.sunrise[0].split('T')[1]+'  Set '+d.daily.sunset[0].split('T')[1];
+        for (var i = 1; i <= 5; i++) {
+          var ti = document.getElementById('wTemp'+i);
+          var ii = document.getElementById('wIcon'+i);
+          var si = document.getElementById('wSun'+i);
+          if (ti) ti.textContent = temp;
+          if (ii) ii.textContent = icon;
+          if (si) si.textContent = sun;
+        }
+      }).catch(function(){});
+  }
+  loadWeather(); setInterval(loadWeather, 600000);
+
+  // ══════════════════════════════════
+  // Screen management
+  // ══════════════════════════════════
+  function showScreen(n) {
+    // Clear any running timer
+    clearActiveTimer();
+
+    // Hide all screens
+    for (var i = 1; i <= 5; i++) {
+      var s = document.getElementById('screen'+i);
+      if (s) s.classList.remove('active');
+    }
+
+    // Reset timer bars
+    ['s2timerBar','s3timerBar','s4timerBar','s5timerBar'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (el) el.style.transform = 'scaleX(1)';
+    });
+
+    currentScreen = n;
+    document.getElementById('screen'+n).classList.add('active');
+
+    if (n === 2) { initSignIn(); }
+    if (n === 3) { initSignOut(); }
+    if (n === 4) { /* already set up before calling showScreen */ startAutoTimer('s4timerBar', 3, function(){ showScreen(1); }); }
+    if (n === 5) { startAutoTimer('s5timerBar', 3, function(){ showScreen(1); }); }
+  }
+
+  // ── Timer system ──
+  var _activeTimer = null;
+
+  function clearActiveTimer() {
+    if (_activeTimer) { clearInterval(_activeTimer); _activeTimer = null; }
+  }
+
+  function startAutoTimer(barId, seconds, onDone) {
+    clearActiveTimer();
+    var timeLeft = seconds;
+    var bar = document.getElementById(barId);
+    if (bar) bar.style.transform = 'scaleX(1)';
+    _activeTimer = setInterval(function() {
+      timeLeft--;
+      if (bar) bar.style.transform = 'scaleX(' + (timeLeft / seconds) + ')';
+      if (timeLeft <= 0) { clearActiveTimer(); onDone(); }
+    }, 1000);
+  }
+
+  function startInactivityTimer(barId, seconds, onDone) {
+    clearActiveTimer();
+    var timeLeft = seconds;
+    var bar = document.getElementById(barId);
+    if (bar) bar.style.transform = 'scaleX(1)';
+    _activeTimer = setInterval(function() {
+      timeLeft--;
+      if (bar) bar.style.transform = 'scaleX(' + (timeLeft / seconds) + ')';
+      if (timeLeft <= 0) { clearActiveTimer(); onDone(); }
+    }, 1000);
+  }
+
+  // Reset inactivity timer on ANY interaction (touch, click, typing, focus)
+  // Listens at document level so iPad virtual keyboard taps are caught too
+  function resetInactivity() {
+    if (currentScreen !== 2 && currentScreen !== 3) return;
+    if (!_activeTimer) return;
+    clearActiveTimer();
+    var barId = currentScreen === 2 ? 's2timerBar' : 's3timerBar';
+    startInactivityTimer(barId, 30, function(){ showScreen(1); });
+  }
+  document.addEventListener('touchstart', resetInactivity, {passive: true});
+  document.addEventListener('click', resetInactivity);
+  document.addEventListener('input', resetInactivity);
+  document.addEventListener('keydown', resetInactivity);
+  document.addEventListener('focusin', resetInactivity);
+
+  // ══════════════════════════════════
+  // Data loading
+  // ══════════════════════════════════
+  function loadPeople() {
+    fetch('/api/people/active')
+      .then(function(r){return r.json();})
+      .then(function(data){ peopleData = data; })
+      .catch(function(){});
+  }
+
+  function loadVisitors() {
+    fetch('/api/visitors')
+      .then(function(r){return r.json();})
+      .then(function(data){ currentVisitors = data; })
+      .catch(function(){});
+  }
+
+  function loadNotice() {
+    fetch('/api/notice')
+      .then(function(r){return r.json();})
+      .then(function(data){
+        if (data && data.text) {
+          document.getElementById('noticeText').textContent = data.text;
+          document.getElementById('noticeBanner').style.display = 'block';
+        } else {
+          document.getElementById('noticeBanner').style.display = 'none';
+        }
+      }).catch(function(){});
+  }
+
+  // ══════════════════════════════════
+  // Screen 2: Sign In
+  // ══════════════════════════════════
+  function initSignIn() {
+    document.getElementById('s2input').value = '';
+    document.getElementById('s2results').style.display = 'none';
+    document.getElementById('s2projectPicker').classList.remove('visible');
+    document.getElementById('s2newForm').classList.remove('visible');
+    document.getElementById('s2status').textContent = '';
+    document.getElementById('s2confirmBtn').textContent = 'Sign In';
+    selectedProject = null;
+    startInactivityTimer('s2timerBar', 30, function(){ showScreen(1); });
+  }
+
+  document.getElementById('s2input').addEventListener('input', function() {
+    var query = this.value.trim().toLowerCase();
+    var box = document.getElementById('s2results');
+    document.getElementById('s2projectPicker').classList.remove('visible');
+    document.getElementById('s2newForm').classList.remove('visible');
+    document.getElementById('s2status').textContent = '';
+    if (query.length < 1) { box.style.display = 'none'; return; }
+
+    var matches = [];
+    if (peopleData && peopleData.projects) {
+      peopleData.projects.forEach(function(proj) {
+        if (proj.visitorProject) return;
+        if (proj.people) proj.people.forEach(function(p) {
+          if (p.name.toLowerCase().indexOf(query) !== -1)
+            matches.push({ id:p.id, name:p.name, jobTitle:p.jobTitle||'', projectName:proj.name });
+        });
+      });
+    }
+
+    box.innerHTML = '';
+    matches.forEach(function(p) {
+      var div = document.createElement('div'); div.className = 'result-item';
+      div.innerHTML = '<div class="result-name">'+esc(p.name)+'</div><div class="result-meta">'+esc(p.projectName)+(p.jobTitle?' · '+esc(p.jobTitle):'')+'</div>';
+      div.addEventListener('click', function(){ signIn(p); });
+      box.appendChild(div);
+    });
+
+    var nameVal = this.value.trim();
+    var newDiv = document.createElement('div'); newDiv.className = 'result-item';
+    newDiv.innerHTML = '<div class="result-name" style="color:#888">+ Not on the list?</div><div class="result-meta">Sign in as a visitor</div>';
+    newDiv.addEventListener('click', function(){ startNewPerson(nameVal); });
+    box.appendChild(newDiv);
+    box.style.display = 'block';
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!document.getElementById('s2searchWrap').contains(e.target))
+      document.getElementById('s2results').style.display = 'none';
+    if (!document.getElementById('s3searchWrap').contains(e.target))
+      document.getElementById('s3results').style.display = 'none';
+  });
+
+  function signIn(person) {
+    document.getElementById('s2results').style.display = 'none';
+    // Check against cached list - fast, no delay
+    var alreadyIn = currentVisitors.find(function(v){ return v.name.toLowerCase() === person.name.toLowerCase(); });
+    if (alreadyIn) {
+      document.getElementById('s2status').textContent = person.name + ' is already signed in.';
+      document.getElementById('s2status').style.color = '#c00';
+      return;
+    }
+    showWelcome(person.name, false);
+    fetch('/api/signin', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({personId:person.id, name:person.name, jobTitle:person.jobTitle, project:person.projectName})
+    }).catch(function(){});
+  }
+
+  function startNewPerson(name) {
+    document.getElementById('s2results').style.display = 'none';
+    document.getElementById('s2input').value = name;
+    document.getElementById('s2projectPicker').classList.add('visible');
+    var list = document.getElementById('s2projectBtnList'); list.innerHTML = '';
+    if (peopleData && peopleData.projects) {
+      peopleData.projects.filter(function(p){ return p.visitorProject; }).forEach(function(proj) {
+        var btn = document.createElement('button'); btn.className = 'proj-btn';
+        btn.innerHTML = esc(proj.name)+'<div class="proj-meta">Guest / visitor</div>';
+        btn.addEventListener('click', function(){ pickProject(proj); });
+        list.appendChild(btn);
+      });
+    }
+  }
+
+  function pickProject(proj) {
+    selectedProject = proj;
+    document.getElementById('s2projectPicker').classList.remove('visible');
+    document.getElementById('s2newForm').classList.add('visible');
+    document.getElementById('s2projectBadge').textContent = 'Signing in as: '+proj.name;
+    document.getElementById('s2jobTitle').value = '';
+    document.getElementById('s2company').value = '';
+    document.getElementById('s2companyRow').style.display = proj.visitorProject ? 'flex' : 'none';
+    document.getElementById('s2jobTitle').focus();
+  }
+
+  function confirmSignIn() {
+    var name = document.getElementById('s2input').value.trim();
+    var jobTitle = document.getElementById('s2jobTitle').value.trim();
+    var company = document.getElementById('s2company').value.trim();
+    if (!name) { document.getElementById('s2status').textContent = 'Please enter your name.'; return; }
+    if (!selectedProject) { document.getElementById('s2status').textContent = 'Please choose a project.'; return; }
+    // Navigate immediately
+    showWelcome(name, true);
+    // Save in background
+    fetch('/api/people', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name:name, jobTitle:jobTitle, company:company, projectId:selectedProject.id})
+    }).then(function() {
+      return fetch('/api/signin', { method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({name:name, jobTitle:jobTitle, project:selectedProject.name})
+      });
+    }).catch(function(){});
+  }
+
+  function showWelcome(name, isNew) {
+    var mins = new Date().getHours() * 60 + new Date().getMinutes();
+    var general = ['Howdy','Welcome','Nice to see you','Good to see you','Bonjour','Hello','Hey'];
+    var timed = [];
+    if (mins < 660) timed.push('Good Morning');
+    if (mins >= 720 && mins < 1050) timed.push('Good Afternoon');
+    if (mins >= 1050) timed.push('Good Evening');
+    var newGreetings = ['Welcome aboard','A warm welcome','Delighted to see you','Pleased to meet you','Thanks for joining us','We\'re glad you\'re here'];
+    var subs = ['Nice to see you','Good to see you','Great to see you','Welcome to Versa'];
+    var pool = isNew ? newGreetings : (timed.length ? general.concat(timed).concat(timed) : general);
+    var greeting = pool[Math.floor(Math.random()*pool.length)];
+    var sub = subs[Math.floor(Math.random()*subs.length)];
+    document.getElementById('s4greeting').textContent = greeting+',';
+    document.getElementById('s4name').textContent = name+'.';
+    document.getElementById('s4sub').textContent = sub;
+    document.getElementById('s4name').style.fontSize = name.length > 10 ? '6.5vw' : '';
+    loadNotice();
+    showScreen(4);
+  }
+
+  // ══════════════════════════════════
+  // Screen 3: Sign Out
+  // ══════════════════════════════════
+  function initSignOut() {
+    document.getElementById('s3input').value = '';
+    document.getElementById('s3results').style.display = 'none';
+    document.getElementById('s3status').textContent = '';
+    loadVisitors();
+    startInactivityTimer('s3timerBar', 30, function(){ showScreen(1); });
+  }
+
+  document.getElementById('s3input').addEventListener('input', function() {
+    var query = this.value.trim().toLowerCase();
+    var box = document.getElementById('s3results');
+    if (query.length < 1) { box.style.display = 'none'; return; }
+    var matches = currentVisitors.filter(function(v){ return v.name.toLowerCase().indexOf(query) !== -1; });
+    box.innerHTML = '';
+    if (matches.length === 0) {
+      var div = document.createElement('div'); div.className = 'result-item'; div.style.color = '#999';
+      div.textContent = 'No one with that name is currently signed in.';
+      box.appendChild(div);
+    } else {
+      matches.forEach(function(v) {
+        var div = document.createElement('div'); div.className = 'result-item';
+        div.innerHTML = '<div class="result-name">'+esc(v.name)+'</div><div class="result-meta">'+esc(v.project||'')+(v.jobTitle?' · '+esc(v.jobTitle):'')+'</div>';
+        div.addEventListener('click', function(){ signOut(v.name); });
+        box.appendChild(div);
+      });
+    }
+    box.style.display = 'block';
+  });
+
+  function signOut(name) {
+    document.getElementById('s3results').style.display = 'none';
+    // Show goodbye screen immediately
+    showGoodbye(name);
+    // Sign out in background
+    fetch('/api/signout', { method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({name:name})
+    }).catch(function(){});
+  }
+
+  function showGoodbye(name) {
+    var standard = ['Goodbye','Bye','Farewell','See you','See you soon','See you later','Take care','Until next time','Bye for now'];
+    var farewell = standard[Math.floor(Math.random()*standard.length)];
+    document.getElementById('s5farewell').textContent = farewell+',';
+    document.getElementById('s5name').textContent = name+'.';
+    document.getElementById('s5name').style.fontSize = name.length > 10 ? '6.5vw' : '';
+    showScreen(5);
+  }
+
+  // ══════════════════════════════════
+  // Utilities
+  // ══════════════════════════════════
+  function esc(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+  // ══════════════════════════════════
+  // NFC
+  // ══════════════════════════════════
+  function showNfcMsg(msg) {
+    var el = document.getElementById('nfcMsg');
+    el.textContent = msg; el.style.opacity = '1';
+    clearTimeout(el._t);
+    el._t = setTimeout(function(){ el.style.opacity = '0'; }, 2500);
+  }
+  async function startNFC() {
+    if (!('NDEFReader' in window)) return;
+    try {
+      var reader = new NDEFReader();
+      await reader.scan();
+      reader.onreading = async function(e) {
+        try {
+          var r = await fetch('/api/nfc-tap', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nfcId: e.serialNumber}) });
+          var data = await r.json();
+          if (data.error) { showNfcMsg(data.error); return; }
+          if (data.action === 'signin') showWelcome(data.name, false);
+          else showGoodbye(data.name);
+        } catch(err) { showNfcMsg('NFC error'); }
+      };
+    } catch(err) {}
+  }
+  startNFC();
+
+  // ══════════════════════════════════
+  // Auto sign out at midnight / 6am
+  // ══════════════════════════════════
+  function scheduleAutoSignout() {
+    var now = new Date();
+    var midnight = new Date(now); midnight.setHours(24, 0, 10, 0);
+    setTimeout(async function() {
       try {
-        var reader = new NDEFReader();
-        await reader.scan();
-        reader.onreading = async function(e) {
-          try {
-            var r = await fetch('/api/nfc-tap', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({nfcId: e.serialNumber}) });
-            var data = await r.json();
-            if (data.error) { showNfcMsg(data.error); return; }
-            if (data.action === 'signin') {
-              sessionStorage.setItem('visitorName', data.name);
-              sessionStorage.setItem('isNewVisitor', 'false');
-              window.location.href = 'page4.html';
-            } else {
-              sessionStorage.setItem('visitorName', data.name);
-              sessionStorage.setItem('isNewVisitor', 'false');
-              window.location.href = 'page5.html';
-            }
-          } catch(err) { showNfcMsg('NFC error'); }
-        };
-      } catch(err) {}
-    }
-    startNFC();
+        var r = await fetch('/api/visitors'); var visitors = await r.json();
+        for (var v of visitors) {
+          if (!v.project.toLowerCase().includes('shopon'))
+            await fetch('/api/signout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:v.name}) });
+        }
+      } catch(e) {}
+      scheduleAutoSignout();
+    }, midnight - now);
+    var sixAm = new Date(now); sixAm.setHours(6, 0, 10, 0);
+    if (sixAm <= now) sixAm.setDate(sixAm.getDate()+1);
+    setTimeout(async function() {
+      try {
+        var r = await fetch('/api/visitors'); var visitors = await r.json();
+        for (var v of visitors) {
+          if (v.project.toLowerCase().includes('shopon'))
+            await fetch('/api/signout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:v.name}) });
+        }
+      } catch(e) {}
+    }, sixAm - now);
+  }
+  scheduleAutoSignout();
 
-    /* ── Auto sign-out at midnight (non-ShopOn) and 6am (ShopOn) ── */
-    function scheduleAutoSignout() {
-      var now = new Date();
-      var midnight = new Date(now); midnight.setHours(24, 0, 10, 0);
-      setTimeout(async function() {
-        try {
-          var r = await fetch('/api/visitors'); var visitors = await r.json();
-          for (var v of visitors) {
-            if (!v.project.toLowerCase().includes('shopon'))
-              await fetch('/api/signout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:v.name}) });
-          }
-        } catch(e) {}
-        scheduleAutoSignout();
-      }, midnight - now);
-      var sixAm = new Date(now); sixAm.setHours(6, 0, 10, 0);
-      if (sixAm <= now) sixAm.setDate(sixAm.getDate()+1);
-      setTimeout(async function() {
-        try {
-          var r = await fetch('/api/visitors'); var visitors = await r.json();
-          for (var v of visitors) {
-            if (v.project.toLowerCase().includes('shopon'))
-              await fetch('/api/signout', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({name:v.name}) });
-          }
-        } catch(e) {}
-      }, sixAm - now);
-    }
-    scheduleAutoSignout();
-  </script>
+  // ══════════════════════════════════
+  // Init
+  // ══════════════════════════════════
+  loadPeople();
+  loadVisitors();
+
+  // Hide heading when keyboard appears (focus/blur on inputs)
+  function hideHeading(headingId) {
+    var h = document.getElementById(headingId);
+    if (h) h.classList.add('hidden');
+  }
+  function showHeading(headingId) {
+    var h = document.getElementById(headingId);
+    if (h) h.classList.remove('hidden');
+  }
+  document.getElementById('s2input').addEventListener('focus', function(){ hideHeading('s2heading'); });
+  document.getElementById('s2input').addEventListener('blur',  function(){ showHeading('s2heading'); });
+  document.getElementById('s3input').addEventListener('focus', function(){ hideHeading('s3heading'); });
+  document.getElementById('s3input').addEventListener('blur',  function(){ showHeading('s3heading'); });
+</script>
 </body>
 </html>
