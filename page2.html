@@ -185,16 +185,21 @@ function loadWeather() {
 
     function signIn(person) {
       document.getElementById('results').style.display = 'none';
-      var alreadyIn = currentVisitors.find(function(v){ return v.name.toLowerCase() === person.name.toLowerCase(); });
-      if (alreadyIn) {
-        document.getElementById('status').textContent = person.name + ' is already signed in.';
-        return;
-      }
-      sessionStorage.setItem('visitorName', person.name);
-      sessionStorage.setItem('visitorProject', person.projectName);
-      sessionStorage.setItem('isNewVisitor', 'false');
-      window.location.href = 'page4.html';
-      fetch('/api/signin', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({personId:person.id, name:person.name, jobTitle:person.jobTitle, project:person.projectName}) }).catch(function(){});
+      document.getElementById('status').textContent = '';
+      fetch('/api/signin', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({personId:person.id, name:person.name, jobTitle:person.jobTitle, project:person.projectName}) })
+        .then(function(r) {
+          if (r.status === 409) {
+            document.getElementById('status').textContent = person.name + ' is already signed in.';
+            return;
+          }
+          sessionStorage.setItem('visitorName', person.name);
+          sessionStorage.setItem('visitorProject', person.projectName);
+          sessionStorage.setItem('isNewVisitor', 'false');
+          window.location.href = 'page4.html';
+        })
+        .catch(function() {
+          document.getElementById('status').textContent = 'Could not connect. Please try again.';
+        });
     }
 
     function startNewPerson(name) { document.getElementById('results').style.display='none'; document.getElementById('searchInput').value=name; showProjectPicker(); }
