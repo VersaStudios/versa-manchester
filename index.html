@@ -175,6 +175,16 @@
       transition: background 0.15s, color 0.15s;
     }
     .close-btn:active { background: #1a1a1a; color: white; }
+
+    .cancel-btn {
+      flex-shrink: 0; margin-bottom: 20px; padding: 14px 36px; font-size: 16px;
+      border-radius: 12px; cursor: pointer; border: 2px solid #ccc;
+      background: transparent; color: #999; font-family: inherit;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s, color 0.15s;
+    }
+    .cancel-btn:active { background: #eee; color: #1a1a1a; border-color: #1a1a1a; }
   </style>
 </head>
 <body>
@@ -247,6 +257,7 @@
     </div>
     <div id="s2status"></div>
   </div>
+  <button class="cancel-btn" onclick="showScreen(1)">Cancel</button>
   <div class="timer-bar" id="s2timerBar"></div>
 </div>
 
@@ -273,6 +284,7 @@
     </div>
     <div id="s3status"></div>
   </div>
+  <button class="cancel-btn" onclick="showScreen(1)">Cancel</button>
   <div class="timer-bar" id="s3timerBar"></div>
 </div>
 
@@ -382,8 +394,9 @@
   // Screen management
   // ══════════════════════════════════
   function showScreen(n) {
-    // Clear any running timer
-    clearActiveTimer();
+    // Clear all timers
+    clearAutoTimer();
+    clearInactivityTimer();
 
     // Hide all screens
     for (var i = 1; i <= 5; i++) {
@@ -406,47 +419,78 @@
     if (n === 5) { startAutoTimer('s5timerBar', 3, function(){ showScreen(1); }); }
   }
 
-  // ── Timer system ──
-  var _activeTimer = null;
+  // ── Timer system (timestamp-based — no race conditions) ──
+  // Two independent timers:
+  //   _autoTimer   — for screens 4/5 (fixed countdown, no reset)
+  //   _inactivity  — for screens 2/3 (resets on any interaction)
 
-  function clearActiveTimer() {
-    if (_activeTimer) { clearInterval(_activeTimer); _activeTimer = null; }
+  var _autoTimer = null;
+
+  function clearAutoTimer() {
+    if (_autoTimer) { clearInterval(_autoTimer); _autoTimer = null; }
   }
 
   function startAutoTimer(barId, seconds, onDone) {
-    clearActiveTimer();
+    clearAutoTimer();
     var timeLeft = seconds;
     var bar = document.getElementById(barId);
     if (bar) bar.style.transform = 'scaleX(1)';
-    _activeTimer = setInterval(function() {
+    _autoTimer = setInterval(function() {
       timeLeft--;
       if (bar) bar.style.transform = 'scaleX(' + (timeLeft / seconds) + ')';
-      if (timeLeft <= 0) { clearActiveTimer(); onDone(); }
+      if (timeLeft <= 0) { clearAutoTimer(); onDone(); }
     }, 1000);
   }
+
+  // Inactivity timer uses a deadline timestamp.
+  // Resetting just bumps the deadline — no interval teardown.
+  var _inactivityInterval = null;
+  var _inactivityDeadline = 0;
+  var _inactivityBarId = null;
+  var _inactivityDuration = 30;
+  var _inactivityOnDone = null;
 
   function startInactivityTimer(barId, seconds, onDone) {
-    clearActiveTimer();
-    var timeLeft = seconds;
+    _inactivityBarId = barId;
+    _inactivityDuration = seconds;
+    _inactivityOnDone = onDone;
+    _inactivityDeadline = Date.now() + seconds * 1000;
+
     var bar = document.getElementById(barId);
     if (bar) bar.style.transform = 'scaleX(1)';
-    _activeTimer = setInterval(function() {
-      timeLeft--;
-      if (bar) bar.style.transform = 'scaleX(' + (timeLeft / seconds) + ')';
-      if (timeLeft <= 0) { clearActiveTimer(); onDone(); }
-    }, 1000);
+
+    // Only one interval ever runs — it just reads the deadline
+    if (!_inactivityInterval) {
+      _inactivityInterval = setInterval(function() {
+        var remaining = _inactivityDeadline - Date.now();
+        if (remaining <= 0) {
+          clearInactivityTimer();
+          if (_inactivityOnDone) _inactivityOnDone();
+        } else {
+          var bar = document.getElementById(_inactivityBarId);
+          if (bar) bar.style.transform = 'scaleX(' + (remaining / (_inactivityDuration * 1000)) + ')';
+        }
+      }, 500);
+    }
   }
 
-  // Reset inactivity timer on ANY interaction (touch, click, typing, focus)
-  // Listens at document level so iPad virtual keyboard taps are caught too
+  function clearInactivityTimer() {
+    if (_inactivityInterval) { clearInterval(_inactivityInterval); _inactivityInterval = null; }
+    _inactivityDeadline = 0;
+  }
+
+  // Any interaction on screens 2/3 just bumps the deadline — nothing is destroyed
   function resetInactivity() {
     if (currentScreen !== 2 && currentScreen !== 3) return;
-    if (!_activeTimer) return;
-    clearActiveTimer();
-    var barId = currentScreen === 2 ? 's2timerBar' : 's3timerBar';
-    startInactivityTimer(barId, 30, function(){ showScreen(1); });
+    if (!_inactivityInterval) return;
+    _inactivityDeadline = Date.now() + _inactivityDuration * 1000;
+    var bar = document.getElementById(_inactivityBarId);
+    if (bar) bar.style.transform = 'scaleX(1)';
   }
+
+  // Listen at document level — catches iPad keyboard taps, touches, everything
   document.addEventListener('touchstart', resetInactivity, {passive: true});
+  document.addEventListener('touchmove', resetInactivity, {passive: true});
   document.addEventListener('click', resetInactivity);
   document.addEventListener('input', resetInactivity);
   document.addEventListener('keydown', resetInactivity);
