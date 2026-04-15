@@ -110,9 +110,8 @@
     /* ════════════════════════════════
        SCREEN 2: Sign In
     ════════════════════════════════ */
-    #s2heading { padding: 16px 0 0; flex-shrink: 0; width: 100%; text-align: center; transition: all 0.2s; }
+    #s2heading { padding: 16px 0 0; flex-shrink: 0; width: 100%; text-align: center; }
     #s2heading h1 { font-size: 11vw; font-weight: 900; text-transform: uppercase; color: #1a1a1a; line-height: 1.0; letter-spacing: 0.02em; }
-    #s2heading.hidden { display: none; }
     #s2searchArea { flex: 1; padding: 20px 0 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; width: 100%; max-width: 560px; }
     #s2searchWrap { position: relative; flex-shrink: 0; }
     input[type="text"] { width: 100%; padding: 18px 20px; border-radius: 14px; border: 2px solid #1a1a1a; font-size: 24px; font-family: inherit; background: white; color: #1a1a1a; outline: none; -webkit-user-select: text; }
@@ -140,9 +139,8 @@
     /* ════════════════════════════════
        SCREEN 3: Sign Out
     ════════════════════════════════ */
-    #s3heading { padding: 16px 0 0; flex-shrink: 0; width: 100%; text-align: center; transition: all 0.2s; }
+    #s3heading { padding: 16px 0 0; flex-shrink: 0; width: 100%; text-align: center; }
     #s3heading h1 { font-size: 11vw; font-weight: 900; text-transform: uppercase; color: #1a1a1a; line-height: 1.0; letter-spacing: 0.02em; }
-    #s3heading.hidden { display: none; }
     #s3searchArea { flex: 1; padding: 20px 0 20px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; width: 100%; max-width: 560px; }
     #s3searchWrap { position: relative; }
     #s3results { display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #1a1a1a; border-top: none; border-radius: 0 0 14px 14px; z-index: 10; max-height: 280px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
@@ -228,7 +226,7 @@
   <div id="s2searchArea">
     <div id="s2searchWrap">
       <input id="s2input" type="text" placeholder="Type your name..."
-             autocomplete="new-password" autocorrect="off" autocapitalize="words" inputmode="text" name="search_person">
+             autocomplete="off" autocorrect="off" autocapitalize="words" inputmode="text">
       <div id="s2results"></div>
     </div>
     <div id="s2projectPicker">
@@ -268,7 +266,7 @@
   <div id="s3searchArea">
     <div id="s3searchWrap">
       <input id="s3input" type="text" placeholder="Type your name..."
-             autocomplete="new-password" autocorrect="off" autocapitalize="words" inputmode="text" name="search_signout">
+             autocomplete="off" autocorrect="off" autocapitalize="words" inputmode="text">
       <div id="s3results"></div>
     </div>
     <div id="s3status"></div>
@@ -524,14 +522,9 @@
 
   function signIn(person) {
     document.getElementById('s2results').style.display = 'none';
-    // Check against cached list - fast, no delay
-    var alreadyIn = currentVisitors.find(function(v){ return v.name.toLowerCase() === person.name.toLowerCase(); });
-    if (alreadyIn) {
-      document.getElementById('s2status').textContent = person.name + ' is already signed in.';
-      document.getElementById('s2status').style.color = '#c00';
-      return;
-    }
+    // Show welcome screen immediately
     showWelcome(person.name, false);
+    // Sign in in background
     fetch('/api/signin', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({personId:person.id, name:person.name, jobTitle:person.jobTitle, project:person.projectName})
     }).catch(function(){});
@@ -720,20 +713,6 @@
   // ══════════════════════════════════
   loadPeople();
   loadVisitors();
-
-  // Hide heading when keyboard appears (focus/blur on inputs)
-  function hideHeading(headingId) {
-    var h = document.getElementById(headingId);
-    if (h) h.classList.add('hidden');
-  }
-  function showHeading(headingId) {
-    var h = document.getElementById(headingId);
-    if (h) h.classList.remove('hidden');
-  }
-  document.getElementById('s2input').addEventListener('focus', function(){ hideHeading('s2heading'); });
-  document.getElementById('s2input').addEventListener('blur',  function(){ showHeading('s2heading'); });
-  document.getElementById('s3input').addEventListener('focus', function(){ hideHeading('s3heading'); });
-  document.getElementById('s3input').addEventListener('blur',  function(){ showHeading('s3heading'); });
 </script>
 </body>
 </html>
