@@ -99,6 +99,7 @@
   <script>
     var peopleData = null;
     var selectedProject = null;
+    var currentVisitors = [];
 
 function getDaySuffix(d) {
       if (d >= 11 && d <= 13) return 'th';
@@ -138,11 +139,8 @@ function loadWeather() {
         if (timeLeft <= 0) { clearInterval(timer); window.location.href = 'index.html'; }
       }, 1000);
     }
-    document.addEventListener('touchstart', resetTimer, {passive:true});
+    document.addEventListener('touchstart', resetTimer);
     document.addEventListener('click', resetTimer);
-    document.addEventListener('input', resetTimer);
-    document.addEventListener('keydown', resetTimer);
-    document.addEventListener('focusin', resetTimer);
     resetTimer();
 
     function loadPeople() {
@@ -187,6 +185,11 @@ function loadWeather() {
 
     function signIn(person) {
       document.getElementById('results').style.display = 'none';
+      var alreadyIn = currentVisitors.find(function(v){ return v.name.toLowerCase() === person.name.toLowerCase(); });
+      if (alreadyIn) {
+        document.getElementById('status').textContent = person.name + ' is already signed in.';
+        return;
+      }
       sessionStorage.setItem('visitorName', person.name);
       sessionStorage.setItem('visitorProject', person.projectName);
       sessionStorage.setItem('isNewVisitor', 'false');
@@ -251,7 +254,12 @@ function loadWeather() {
 
     document.getElementById('logo').onclick = function() { window.location.href='index.html'; };
     loadPeople();
+    loadVisitors();
     document.getElementById('searchInput').focus();
+
+    function loadVisitors() {
+      fetch('/api/visitors').then(function(r){return r.json();}).then(function(data){ currentVisitors = data; }).catch(function(){});
+    }
   </script>
 </body>
 </html>
