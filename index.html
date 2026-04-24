@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Versa London</title>
+  <title>Versa Manchester</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -189,7 +189,7 @@
     </div>
     <div id="centreLogoArea">
       <img id="centreLogo" src="Versa Logo.png" alt="Versa">
-      <div id="siteLabel">London</div>
+      <div id="siteLabel">Manchester</div>
     </div>
     <div id="homeTopRight">
       <div class="top-right">
@@ -358,7 +358,7 @@
   // Weather — updates all screens
   // ══════════════════════════════════
   function loadWeather() {
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
       .then(function(r){return r.json();}).then(function(d){
         var icons={0:'☀️',1:'⛅',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',61:'🌧️',71:'🌨️',80:'🌧️',95:'⛈️'};
         var key=Object.keys(icons).reverse().find(function(k){return d.current.weathercode>=+k;})||'0';
