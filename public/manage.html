@@ -224,6 +224,14 @@
       }
 
       /* ── Safe edge padding ── */
+
+      /* ── Site toggle ── */
+      #siteToggle { display: flex; gap: 0; margin-bottom: 24px; border-radius: 12px; overflow: hidden; border: 2px solid #1a1a1a; }
+      .site-btn { flex: 1; padding: 14px 0; font-size: 16px; font-weight: bold; font-family: inherit;
+        cursor: pointer; border: none; background: white; color: #1a1a1a; text-transform: uppercase;
+        letter-spacing: 0.06em; transition: background 0.15s, color 0.15s; -webkit-tap-highlight-color: transparent; }
+      .site-btn.active { background: #1a1a1a; color: white; }
+      .site-btn:not(.active):active { background: #f0f0f0; }
       body { padding-left: max(24px, env(safe-area-inset-left));
              padding-right: max(24px, env(safe-area-inset-right)); }
 
@@ -270,6 +278,12 @@
     <!-- Manage panel -->
     <div id="managePanel">
 
+      <!-- Site toggle -->
+      <div id="siteToggle">
+        <button class="site-btn active" id="btnManchester" onclick="switchSite('manchester')">Manchester</button>
+        <button class="site-btn" id="btnLondon" onclick="switchSite('london')">London</button>
+      </div>
+
       <!-- Notice section -->
       <h2 class="section-title">Home Screen Notice</h2>
       <div class="notice-wrap">
@@ -313,6 +327,24 @@
       const ACCESS_CODE = '1956';
       let peopleData = null;
 
+      // ── Site toggle ──
+      const SITE_URLS = {
+        manchester: 'https://versa-manchester-production.up.railway.app',
+        london: 'https://versa-london-production.up.railway.app'
+      };
+      let currentSite = 'manchester';
+      let apiBase = SITE_URLS.manchester;
+
+      function switchSite(site) {
+        currentSite = site;
+        apiBase = SITE_URLS[site];
+        document.getElementById('btnManchester').className = 'site-btn' + (site === 'manchester' ? ' active' : '');
+        document.getElementById('btnLondon').className = 'site-btn' + (site === 'london' ? ' active' : '');
+        peopleData = null;
+        loadPeople();
+        loadNotice();
+      }
+
       let kpValue = '';
       function kpPress(digit) {
         if (kpValue.length >= 6) return;
@@ -345,7 +377,7 @@
       // ── Load & render ──
       async function loadPeople() {
         try {
-          const res = await fetch('/api/people');
+          const res = await fetch(apiBase + '/api/people');
           peopleData = await res.json();
           renderProjects();
         } catch (e) { setStatus('Could not load data.'); }
@@ -467,7 +499,7 @@
         if (!name) { statusEl.textContent = 'Please enter a name.'; statusEl.style.color = '#c00'; return; }
 
         try {
-          const res = await fetch('/api/people', {
+          const res = await fetch(apiBase + '/api/people', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name, jobTitle, company, projectId })
           });
@@ -492,7 +524,7 @@
         const name = nameInput.value.trim();
         if (!name) { setStatus('Enter a project name.'); return; }
         try {
-          const res = await fetch('/api/projects', {
+          const res = await fetch(apiBase + '/api/projects', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ name })
           });
@@ -517,7 +549,7 @@
           : `Delete project "${projectName}"?`;
         if (!confirm(msg)) return;
         try {
-          const res = await fetch(`/api/projects/${projectId}`, { method: 'DELETE' });
+          const res = await fetch(apiBase + `/api/projects/${projectId}`, { method: 'DELETE' });
           if (!res.ok) { setStatus('Could not delete project.'); return; }
           setStatus(''); await loadPeople();
         } catch (e) { setStatus('Could not reach server.'); }
@@ -527,7 +559,7 @@
       async function deletePerson(personId, personName) {
         if (!confirm(`Remove ${personName} from the database?`)) return;
         try {
-          const res = await fetch(`/api/people/${personId}`, { method: 'DELETE' });
+          const res = await fetch(apiBase + `/api/people/${personId}`, { method: 'DELETE' });
           if (!res.ok) { setStatus('Could not delete person.'); return; }
           setStatus(''); await loadPeople();
         } catch (e) { setStatus('Could not reach server.'); }
@@ -537,7 +569,7 @@
       async function toggleSuspend(e, projectId) {
         e.stopPropagation();
         try {
-          await fetch(`/api/projects/${projectId}/suspend`, { method: 'PUT' });
+          await fetch(apiBase + `/api/projects/${projectId}/suspend`, { method: 'PUT' });
           loadPeople();
         } catch (e) { setStatus('Could not update project.'); }
       }
@@ -545,7 +577,7 @@
       // ── Notice ──
       async function loadNotice() {
         try {
-          const res = await fetch('/api/notice');
+          const res = await fetch(apiBase + '/api/notice');
           const data = await res.json();
           document.getElementById('noticeInput').value = data.text || '';
         } catch (e) {}
@@ -555,7 +587,7 @@
         const text = document.getElementById('noticeInput').value.trim();
         const status = document.getElementById('noticeStatus');
         try {
-          await fetch('/api/notice', {
+          await fetch(apiBase + '/api/notice', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text })
           });
@@ -592,7 +624,7 @@
           nfcReader.onreading = async (event) => {
             const nfcId = event.serialNumber;
             if (!nfcId || !assigningPersonId) return;
-            const res = await fetch(`/api/people/${assigningPersonId}/nfc`, {
+            const res = await fetch(apiBase + `/api/people/${assigningPersonId}/nfc`, {
               method: 'PUT', headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ nfcId })
             });
@@ -614,7 +646,7 @@
 
       async function removeCard(personId, personName) {
         if (!confirm(`Remove NFC card from ${personName}?`)) return;
-        await fetch(`/api/people/${personId}/nfc`, { method: 'DELETE' });
+        await fetch(apiBase + `/api/people/${personId}/nfc`, { method: 'DELETE' });
         loadPeople();
       }
 
@@ -648,7 +680,7 @@
         var jobTitle = document.getElementById('editJobTitle').value.trim();
         if (!name) { document.getElementById('editError').textContent = 'Name is required.'; return; }
         try {
-          var r = await fetch('/api/people/' + id, {
+          var r = await fetch(apiBase + '/api/people/' + id, {
             method: 'PUT', headers: {'Content-Type':'application/json'},
             body: JSON.stringify({ name, jobTitle })
           });
