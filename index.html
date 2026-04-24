@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Versa Manchester</title>
+  <title>Versa London</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -110,9 +110,8 @@
     /* ════════════════════════════════
        SCREEN 2: Sign In
     ════════════════════════════════ */
-    #s2heading { padding: 16px 0 0; flex-shrink: 0; width: 100%; text-align: center; transition: all 0.2s; }
+    #s2heading { padding: 16px 0 0; flex-shrink: 0; width: 100%; text-align: center; }
     #s2heading h1 { font-size: 11vw; font-weight: 900; text-transform: uppercase; color: #1a1a1a; line-height: 1.0; letter-spacing: 0.02em; }
-    #s2heading.hidden { display: none; }
     #s2searchArea { flex: 1; padding: 20px 0 20px; display: flex; flex-direction: column; gap: 12px; overflow-y: auto; width: 100%; max-width: 560px; }
     #s2searchWrap { position: relative; flex-shrink: 0; }
     input[type="text"] { width: 100%; padding: 18px 20px; border-radius: 14px; border: 2px solid #1a1a1a; font-size: 24px; font-family: inherit; background: white; color: #1a1a1a; outline: none; -webkit-user-select: text; }
@@ -140,9 +139,8 @@
     /* ════════════════════════════════
        SCREEN 3: Sign Out
     ════════════════════════════════ */
-    #s3heading { padding: 16px 0 0; flex-shrink: 0; width: 100%; text-align: center; transition: all 0.2s; }
+    #s3heading { padding: 16px 0 0; flex-shrink: 0; width: 100%; text-align: center; }
     #s3heading h1 { font-size: 11vw; font-weight: 900; text-transform: uppercase; color: #1a1a1a; line-height: 1.0; letter-spacing: 0.02em; }
-    #s3heading.hidden { display: none; }
     #s3searchArea { flex: 1; padding: 20px 0 20px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; width: 100%; max-width: 560px; }
     #s3searchWrap { position: relative; }
     #s3results { display: none; position: absolute; top: 100%; left: 0; right: 0; background: white; border: 2px solid #1a1a1a; border-top: none; border-radius: 0 0 14px 14px; z-index: 10; max-height: 280px; overflow-y: auto; box-shadow: 0 8px 24px rgba(0,0,0,0.12); }
@@ -175,16 +173,6 @@
       transition: background 0.15s, color 0.15s;
     }
     .close-btn:active { background: #1a1a1a; color: white; }
-
-    .cancel-btn {
-      flex-shrink: 0; margin-bottom: 20px; padding: 14px 36px; font-size: 16px;
-      border-radius: 12px; cursor: pointer; border: 2px solid #ccc;
-      background: transparent; color: #999; font-family: inherit;
-      letter-spacing: 0.08em; text-transform: uppercase;
-      -webkit-tap-highlight-color: transparent;
-      transition: background 0.15s, color 0.15s;
-    }
-    .cancel-btn:active { background: #eee; color: #1a1a1a; border-color: #1a1a1a; }
   </style>
 </head>
 <body>
@@ -201,7 +189,7 @@
     </div>
     <div id="centreLogoArea">
       <img id="centreLogo" src="Versa Logo.png" alt="Versa">
-      <div id="siteLabel">Manchester</div>
+      <div id="siteLabel">London</div>
     </div>
     <div id="homeTopRight">
       <div class="top-right">
@@ -238,7 +226,7 @@
   <div id="s2searchArea">
     <div id="s2searchWrap">
       <input id="s2input" type="text" placeholder="Type your name..."
-             autocomplete="new-password" autocorrect="off" autocapitalize="words" inputmode="text" name="search_person">
+             autocomplete="off" autocorrect="off" autocapitalize="words" inputmode="text">
       <div id="s2results"></div>
     </div>
     <div id="s2projectPicker">
@@ -257,7 +245,6 @@
     </div>
     <div id="s2status"></div>
   </div>
-  <button class="cancel-btn" onclick="showScreen(1)">Cancel</button>
   <div class="timer-bar" id="s2timerBar"></div>
 </div>
 
@@ -279,12 +266,11 @@
   <div id="s3searchArea">
     <div id="s3searchWrap">
       <input id="s3input" type="text" placeholder="Type your name..."
-             autocomplete="new-password" autocorrect="off" autocapitalize="words" inputmode="text" name="search_signout">
+             autocomplete="off" autocorrect="off" autocapitalize="words" inputmode="text">
       <div id="s3results"></div>
     </div>
     <div id="s3status"></div>
   </div>
-  <button class="cancel-btn" onclick="showScreen(1)">Cancel</button>
   <div class="timer-bar" id="s3timerBar"></div>
 </div>
 
@@ -345,6 +331,7 @@
   var currentVisitors = [];
   var selectedProject = null;
   var currentScreen = 1;
+  var timerInterval = null;
   var autoTimer = null;
 
   // ══════════════════════════════════
@@ -371,7 +358,7 @@
   // Weather — updates all screens
   // ══════════════════════════════════
   function loadWeather() {
-    fetch('https://api.open-meteo.com/v1/forecast?latitude=53.4808&longitude=-2.2426&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
+    fetch('https://api.open-meteo.com/v1/forecast?latitude=51.5074&longitude=-0.1278&current=temperature_2m,weathercode&daily=sunrise,sunset&timezone=Europe%2FLondon&forecast_days=1')
       .then(function(r){return r.json();}).then(function(d){
         var icons={0:'☀️',1:'⛅',2:'⛅',3:'☁️',45:'🌫️',51:'🌦️',61:'🌧️',71:'🌨️',80:'🌧️',95:'⛈️'};
         var key=Object.keys(icons).reverse().find(function(k){return d.current.weathercode>=+k;})||'0';
@@ -394,9 +381,8 @@
   // Screen management
   // ══════════════════════════════════
   function showScreen(n) {
-    // Clear all timers
-    clearAutoTimer();
-    clearInactivityTimer();
+    // Clear any running timer
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
 
     // Hide all screens
     for (var i = 1; i <= 5; i++) {
@@ -419,82 +405,33 @@
     if (n === 5) { startAutoTimer('s5timerBar', 3, function(){ showScreen(1); }); }
   }
 
-  // ── Timer system (timestamp-based — no race conditions) ──
-  // Two independent timers:
-  //   _autoTimer   — for screens 4/5 (fixed countdown, no reset)
-  //   _inactivity  — for screens 2/3 (resets on any interaction)
-
-  var _autoTimer = null;
-
-  function clearAutoTimer() {
-    if (_autoTimer) { clearInterval(_autoTimer); _autoTimer = null; }
-  }
-
   function startAutoTimer(barId, seconds, onDone) {
-    clearAutoTimer();
     var timeLeft = seconds;
     var bar = document.getElementById(barId);
     if (bar) bar.style.transform = 'scaleX(1)';
-    _autoTimer = setInterval(function() {
+    timerInterval = setInterval(function() {
       timeLeft--;
       if (bar) bar.style.transform = 'scaleX(' + (timeLeft / seconds) + ')';
-      if (timeLeft <= 0) { clearAutoTimer(); onDone(); }
+      if (timeLeft <= 0) { clearInterval(timerInterval); timerInterval = null; onDone(); }
     }, 1000);
   }
 
-  // Inactivity timer uses a deadline timestamp.
-  // Resetting just bumps the deadline — no interval teardown.
-  var _inactivityInterval = null;
-  var _inactivityDeadline = 0;
-  var _inactivityBarId = null;
-  var _inactivityDuration = 30;
-  var _inactivityOnDone = null;
-
   function startInactivityTimer(barId, seconds, onDone) {
-    _inactivityBarId = barId;
-    _inactivityDuration = seconds;
-    _inactivityOnDone = onDone;
-    _inactivityDeadline = Date.now() + seconds * 1000;
-
+    var timeLeft = seconds;
     var bar = document.getElementById(barId);
     if (bar) bar.style.transform = 'scaleX(1)';
-
-    // Only one interval ever runs — it just reads the deadline
-    if (!_inactivityInterval) {
-      _inactivityInterval = setInterval(function() {
-        var remaining = _inactivityDeadline - Date.now();
-        if (remaining <= 0) {
-          clearInactivityTimer();
-          if (_inactivityOnDone) _inactivityOnDone();
-        } else {
-          var bar = document.getElementById(_inactivityBarId);
-          if (bar) bar.style.transform = 'scaleX(' + (remaining / (_inactivityDuration * 1000)) + ')';
-        }
-      }, 500);
+    function reset() {
+      timeLeft = seconds;
+      if (bar) bar.style.transform = 'scaleX(1)';
     }
+    document.addEventListener('touchstart', reset);
+    document.addEventListener('click', reset);
+    timerInterval = setInterval(function() {
+      timeLeft--;
+      if (bar) bar.style.transform = 'scaleX(' + (timeLeft / seconds) + ')';
+      if (timeLeft <= 0) { clearInterval(timerInterval); timerInterval = null; onDone(); }
+    }, 1000);
   }
-
-  function clearInactivityTimer() {
-    if (_inactivityInterval) { clearInterval(_inactivityInterval); _inactivityInterval = null; }
-    _inactivityDeadline = 0;
-  }
-
-  // Any interaction on screens 2/3 just bumps the deadline — nothing is destroyed
-  function resetInactivity() {
-    if (currentScreen !== 2 && currentScreen !== 3) return;
-    if (!_inactivityInterval) return;
-    _inactivityDeadline = Date.now() + _inactivityDuration * 1000;
-    var bar = document.getElementById(_inactivityBarId);
-    if (bar) bar.style.transform = 'scaleX(1)';
-  }
-
-  // Listen at document level — catches iPad keyboard taps, touches, everything
-  document.addEventListener('touchstart', resetInactivity, {passive: true});
-  document.addEventListener('touchmove', resetInactivity, {passive: true});
-  document.addEventListener('click', resetInactivity);
-  document.addEventListener('input', resetInactivity);
-  document.addEventListener('keydown', resetInactivity);
-  document.addEventListener('focusin', resetInactivity);
 
   // ══════════════════════════════════
   // Data loading
@@ -538,6 +475,7 @@
     document.getElementById('s2confirmBtn').textContent = 'Sign In';
     selectedProject = null;
     startInactivityTimer('s2timerBar', 30, function(){ showScreen(1); });
+    setTimeout(function(){ document.getElementById('s2input').focus(); }, 100);
   }
 
   document.getElementById('s2input').addEventListener('input', function() {
@@ -584,14 +522,9 @@
 
   function signIn(person) {
     document.getElementById('s2results').style.display = 'none';
-    // Check against cached list - fast, no delay
-    var alreadyIn = currentVisitors.find(function(v){ return v.name.toLowerCase() === person.name.toLowerCase(); });
-    if (alreadyIn) {
-      document.getElementById('s2status').textContent = person.name + ' is already signed in.';
-      document.getElementById('s2status').style.color = '#c00';
-      return;
-    }
+    // Show welcome screen immediately
     showWelcome(person.name, false);
+    // Sign in in background
     fetch('/api/signin', { method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({personId:person.id, name:person.name, jobTitle:person.jobTitle, project:person.projectName})
     }).catch(function(){});
@@ -670,6 +603,7 @@
     document.getElementById('s3status').textContent = '';
     loadVisitors();
     startInactivityTimer('s3timerBar', 30, function(){ showScreen(1); });
+    setTimeout(function(){ document.getElementById('s3input').focus(); }, 100);
   }
 
   document.getElementById('s3input').addEventListener('input', function() {
@@ -779,20 +713,6 @@
   // ══════════════════════════════════
   loadPeople();
   loadVisitors();
-
-  // Hide heading when keyboard appears (focus/blur on inputs)
-  function hideHeading(headingId) {
-    var h = document.getElementById(headingId);
-    if (h) h.classList.add('hidden');
-  }
-  function showHeading(headingId) {
-    var h = document.getElementById(headingId);
-    if (h) h.classList.remove('hidden');
-  }
-  document.getElementById('s2input').addEventListener('focus', function(){ hideHeading('s2heading'); });
-  document.getElementById('s2input').addEventListener('blur',  function(){ showHeading('s2heading'); });
-  document.getElementById('s3input').addEventListener('focus', function(){ hideHeading('s3heading'); });
-  document.getElementById('s3input').addEventListener('blur',  function(){ showHeading('s3heading'); });
 </script>
 </body>
 </html>
