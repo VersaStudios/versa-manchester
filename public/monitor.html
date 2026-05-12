@@ -121,39 +121,6 @@
       /* Date group headers in history modal */
       .day-header td { background: #f4f4f4; font-size: 12px; font-weight: bold; letter-spacing: 0.05em; text-transform: uppercase; color: #888; padding: 7px 16px; border-bottom: 1px solid #eee; }
       .day-total td { background: #fafafa; font-size: 12px; color: #aaa; padding: 7px 16px; border-bottom: 1px solid #eee; text-align: right; font-style: italic; }
-
-      /* ── Mobile responsive ── */
-      @media (max-width: 600px) {
-        #access-box { padding: 20px 20px 32px; }
-        #gateHeading { font-size: 10vw; margin: 16px 0 24px; }
-        #keypadDisplay { font-size: 32px; min-height: 60px; padding: 14px 16px; }
-        .kp-btn { padding: 16px 0; font-size: 22px; border-radius: 10px; }
-        #keypad { gap: 8px; }
-
-        #logo { width: 100px; }
-        #monitor { padding: 0 4px; }
-        .panel-header { flex-direction: column; align-items: flex-start; gap: 8px; }
-        .btn-row { width: 100%; }
-        .btn-row .btn { flex: 1; font-size: 12px; padding: 8px 8px; }
-        .btn-row { display: flex; gap: 6px; }
-        .tabs { overflow-x: auto; }
-        .tab { padding: 10px 16px; font-size: 13px; white-space: nowrap; }
-
-        /* Make tables scroll horizontally */
-        #tab-current, #tab-history { overflow-x: auto; }
-        .group-table td { padding: 10px 10px; font-size: 13px; white-space: normal; }
-        .group-header { padding: 8px 10px; }
-        th, td { padding: 10px 10px; font-size: 13px; white-space: normal; }
-
-        /* Person modal full screen on mobile */
-        #personModal { padding: 0; align-items: flex-end; }
-        #personModalBox { max-width: 100%; max-height: 92vh; border-radius: 20px 20px 0 0; }
-        .week-cell { padding: 10px 6px; }
-        .week-hours { font-size: 18px; }
-        .week-label { font-size: 10px; }
-
-        body { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
-      }
     </style>
   </head>
   <body>
@@ -230,6 +197,7 @@
 
     <script>
       const ACCESS_CODE = '1956';
+      const BYPASS_TOKEN = 'vctrl_8f3a91d2c47b6e05a1f9d2c8b4e7a3f1';
       let currentVisitors = [], historyData = [];
 
       let kpValue = '';
@@ -244,20 +212,38 @@
         kpValue = kpValue.slice(0, -1);
         document.getElementById('keypadDisplay').textContent = '•'.repeat(kpValue.length);
       }
+      function unlockMonitor() {
+        document.getElementById('access-box').style.display = 'none';
+        document.getElementById('logo').style.display = 'block';
+        document.getElementById('monitor').style.display = 'block';
+        document.body.style.background = '#f0f0f0';
+        document.body.style.padding = '40px 20px 60px';
+        initMonitor();
+      }
+
       function checkCode() {
         if (kpValue === ACCESS_CODE) {
-          document.getElementById('access-box').style.display = 'none';
-          document.getElementById('logo').style.display = 'block';
-          document.getElementById('monitor').style.display = 'block';
-          document.body.style.background = '#f0f0f0';
-          document.body.style.padding = '40px 20px 60px';
-          initMonitor();
+          unlockMonitor();
         } else {
           document.getElementById('codeError').textContent = 'Incorrect code.';
           kpValue = '';
           document.getElementById('keypadDisplay').textContent = '';
         }
       }
+
+      // Bypass — auto-unlock if URL has matching token (used by Control Dashboard iframe)
+      (function tryBypass() {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          if (params.get('bypass') === BYPASS_TOKEN) {
+            if (document.readyState === 'loading') {
+              document.addEventListener('DOMContentLoaded', unlockMonitor);
+            } else {
+              unlockMonitor();
+            }
+          }
+        } catch (e) { /* no-op */ }
+      })();
 
       function initMonitor() {
         loadHistory();
