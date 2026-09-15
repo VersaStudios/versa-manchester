@@ -18,8 +18,12 @@ app.use((req, res, next) => {
   res.header('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.sendStatus(200);
   next();
-  app.use('/api/alert', alertRoutes(supabase));
 });
+
+const SITE = 'manchester';
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+
+app.use('/api/alert', alertRoutes(supabase));   // <- here, after supabase exists
 
 const SITE = 'manchester';
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
