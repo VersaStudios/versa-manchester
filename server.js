@@ -23,10 +23,8 @@ app.use((req, res, next) => {
 const SITE = 'manchester';
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
 
-app.use('/api/alert', alertRoutes(supabase));   // <- here, after supabase exists
-
-const SITE = 'manchester';
-const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_KEY);
+// Alert system — must come after supabase is created
+app.use('/api/alert', alertRoutes(supabase));
 
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
 
@@ -223,10 +221,12 @@ app.post('/api/nfc-tap', async (req, res) => {
   const { data: signedIn } = await supabase.from('visitors').select('id').eq('site', SITE).eq('person_id', person.id).is('time_out', null).limit(1);
   if (signedIn && signedIn.length > 0) {
     await supabase.from('visitors').update({ time_out: new Date().toISOString() }).eq('id', signedIn[0].id);
+    invalidateVisitorsCache();
     io.emit('update', await getCurrentVisitors());
     return res.json({ success: true, action: 'signout', name: person.name });
   } else {
     await supabase.from('visitors').insert({ id: uid(), site: SITE, person_id: person.id, name: person.name, job_title: person.job_title||'', project: projectName, time_in: new Date().toISOString() });
+    invalidateVisitorsCache();
     io.emit('update', await getCurrentVisitors());
     return res.json({ success: true, action: 'signin', name: person.name });
   }
@@ -278,6 +278,7 @@ app.post('/api/signout', async (req, res) => {
 
 app.delete('/api/clear', async (req, res) => {
   await supabase.from('visitors').update({ time_out: new Date().toISOString() }).eq('site', SITE).is('time_out', null);
+  invalidateVisitorsCache();
   io.emit('update', []);
   res.json({ success: true });
 });
@@ -316,6 +317,7 @@ function scheduleAutoSignout() {
       const isShopOn = v.project && v.project.toLowerCase().includes('shopon');
       if (!isShopOn) await supabase.from('visitors').update({ time_out: new Date().toISOString() }).eq('id', v.id);
     }
+    invalidateVisitorsCache();
     io.emit('update', await getCurrentVisitors());
     scheduleAutoSignout();
   }, midnight - now);
@@ -328,6 +330,7 @@ function scheduleAutoSignout() {
       const isShopOn = v.project && v.project.toLowerCase().includes('shopon');
       if (isShopOn) await supabase.from('visitors').update({ time_out: new Date().toISOString() }).eq('id', v.id);
     }
+    invalidateVisitorsCache();
     io.emit('update', await getCurrentVisitors());
   }, sixAm - now);
 }
